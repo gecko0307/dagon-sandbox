@@ -1,0 +1,4 @@
+[submodule "dagon"]
+	path = dagon
+	url = https://github.com/gecko0307/dagon
+	branch = dagon-ng
