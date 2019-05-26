@@ -249,10 +249,10 @@ class Editor: Scene
             {
                 gui.layoutRowDynamic(30, 1);
                 
-                game.renderer.outputMode = 
+                game.deferredRenderer.outputMode = 
                     cast(DebugOutputMode)gui.comboString(
                         "Radiance\0Albedo\0Normal\0Position\0Roughness\0Metallic", 
-                        game.renderer.outputMode, 6, 25, NKVec2(260, 200));
+                        game.deferredRenderer.outputMode, 6, 25, NKVec2(260, 200));
                     
                 gui.treePop();
             }
