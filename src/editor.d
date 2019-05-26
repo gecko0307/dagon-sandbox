@@ -254,7 +254,19 @@ class Editor: Scene
                     cast(DebugOutputMode)gui.comboString(
                         "Radiance\0Albedo\0Normal\0Position\0Roughness\0Metallic", 
                         game.deferredRenderer.outputMode, 6, 25, NKVec2(260, 200));
-                        
+                
+                gui.layoutRowDynamic(25, 3);
+                gui.label("Glow threshold:", NK_TEXT_LEFT);
+                gui.slider(0.0f, &game.postProcRenderer.glowThreshold, 1.0f, 0.01f);
+                game.postProcRenderer.glowThreshold = gui.property("", 0.0f, game.postProcRenderer.glowThreshold, 1.0f, 0.01f, 0.005f);
+                
+                gui.label("Glow intensity:", NK_TEXT_LEFT);
+                gui.slider(0.0f, &game.postProcRenderer.glowIntensity, 1.0f, 0.01f);
+                game.postProcRenderer.glowIntensity = gui.property("", 0.0f, game.postProcRenderer.glowIntensity, 1.0f, 0.01f, 0.005f);
+                
+                gui.layoutRowDynamic(30, 1);
+                game.postProcRenderer.glowRadius = gui.property("Glow radius:", 1, game.postProcRenderer.glowRadius, 10, 1, 1);
+                
                 game.postProcRenderer.tonemapper = 
                     cast(Tonemapper)gui.comboString(
                         "None\0Reinhard\0Hable\0ACES", 
