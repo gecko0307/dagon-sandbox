@@ -76,7 +76,7 @@ class Editor: Scene
         aTexDesertAlbedo = addTextureAsset("data/desert-albedo.png");
         aTexDesertNormal = addTextureAsset("data/desert-normal.png");
         aTexDesertRoughness = addTextureAsset("data/desert-roughness.png");
-        aEnvmap = addTextureAsset("data/the_sky_is_on_fire_1k.hdr");
+        aEnvmap = addTextureAsset("data/venice_sunset_1k.hdr");
     }
 
     override void onLoad(Time t, float progress)
