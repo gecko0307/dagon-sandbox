@@ -13,14 +13,16 @@ class MyGame: Game
         currentScene = New!Editor(this);
         
         deferredRenderer.setViewport(0, 0, eventManager.windowWidth - 300, eventManager.windowHeight - 40);
-        postProcRenderer.setViewport(300, 0, eventManager.windowWidth - 300, eventManager.windowHeight - 40);
+        postProcRenderer.setViewport(0, 0, eventManager.windowWidth - 300, eventManager.windowHeight - 40);
+        presentRenderer.setViewport(300, 0, eventManager.windowWidth - 300, eventManager.windowHeight - 40);
         hudRenderer.setViewport(0, 0, width, height);
     }
     
     override void onResize(int width, int height)
     {
         deferredRenderer.setViewport(0, 0, width - 300, height - 40);
-        postProcRenderer.setViewport(300, 0, width - 300, height - 40);
+        postProcRenderer.setViewport(0, 0, width - 300, height - 40);
+        presentRenderer.setViewport(300, 0, width - 300, height - 40);
         hudRenderer.setViewport(0, 0, width, height);
     }
 }
