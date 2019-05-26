@@ -97,6 +97,7 @@ class Editor: Scene
         sun = addLight(LightType.Sun);
         sun.position.y = 50.0f;
         sun.shadowEnabled = true;
+        sun.energy = 10.0f;
         
         eTerrain = addEntity();
         eTerrain.position = Vector3f(-64, 0, -64);
@@ -253,7 +254,17 @@ class Editor: Scene
                     cast(DebugOutputMode)gui.comboString(
                         "Radiance\0Albedo\0Normal\0Position\0Roughness\0Metallic", 
                         game.deferredRenderer.outputMode, 6, 25, NKVec2(260, 200));
-                    
+                        
+                game.postProcRenderer.tonemapper = 
+                    cast(Tonemapper)gui.comboString(
+                        "None\0Reinhard\0Hable\0ACES", 
+                        game.postProcRenderer.tonemapper, 4, 25, NKVec2(260, 200));
+                
+                gui.layoutRowDynamic(25, 3);
+                gui.label("Exposure:", NK_TEXT_LEFT);
+                gui.slider(0.0f, &game.postProcRenderer.exposure, 3.0f, 0.01f);
+                game.postProcRenderer.exposure = gui.property("", 0.0f, game.postProcRenderer.exposure, 3.0f, 0.01f, 0.005f);
+                
                 gui.treePop();
             }
             
