@@ -274,8 +274,8 @@ class Editor: Scene
                 
                 gui.layoutRowDynamic(25, 3);
                 gui.label("Exposure:", NK_TEXT_LEFT);
-                gui.slider(0.0f, &game.postProcRenderer.exposure, 3.0f, 0.01f);
-                game.postProcRenderer.exposure = gui.property("", 0.0f, game.postProcRenderer.exposure, 3.0f, 0.01f, 0.005f);
+                gui.slider(0.0f, &game.postProcRenderer.exposure, 2.0f, 0.01f);
+                game.postProcRenderer.exposure = gui.property("", 0.0f, game.postProcRenderer.exposure, 2.0f, 0.01f, 0.005f);
                 
                 gui.treePop();
             }
