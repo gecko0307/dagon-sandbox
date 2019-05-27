@@ -34,6 +34,7 @@ class Editor: Scene
 {
     Game game;
     
+    FontAsset aFont;
     OBJAsset aSuzanne;
     ImageAsset aHeightmap;
     TextureAsset aTexDesertAlbedo;
@@ -71,6 +72,7 @@ class Editor: Scene
     
     override void beforeLoad()
     {
+        aFont = addFontAsset("data/font/DroidSans.ttf", 14);
         aSuzanne = addOBJAsset("data/suzanne.obj");
         aHeightmap = addImageAsset("data/heightmap.png");
         aTexDesertAlbedo = addTextureAsset("data/desert-albedo.png");
@@ -106,7 +108,7 @@ class Editor: Scene
         eTerrain.material.diffuse = aTexDesertAlbedo.texture;
         eTerrain.material.normal = aTexDesertNormal.texture;
         eTerrain.material.roughness = aTexDesertRoughness.texture;
-
+        
         auto heightmap = New!ImageHeightmap(aHeightmap.image, 30.0f, assetManager);
         auto terrain = New!Terrain(512, 64, heightmap, assetManager);
         eTerrain.drawable = terrain;
@@ -120,15 +122,12 @@ class Editor: Scene
         diffuseColor = Color4f(0.5f, 0.5f, 0.5f, 1.0f);
         
         gui = New!NuklearGUI(eventManager, assetManager);
-        gui.addFont("data/font/DroidSans.ttf", 18, gui.localeGlyphRanges);
+        gui.addFont(aFont, 18, gui.localeGlyphRanges);
         auto eNuklear = addEntityHUD();
         eNuklear.drawable = gui;
-
-        font = New!FreeTypeFont(14, assetManager);
-        font.createFromFile("data/font/DroidSans.ttf");
-        font.prepareVAO();
+        
         text = addEntityHUD();
-        infoText = New!TextLine(font, "Hello, World!", assetManager);
+        infoText = New!TextLine(aFont.font, "Hello, World!", assetManager);
         infoText.color = Color4f(0.6f, 0.6f, 0.6f, 1.0f);
         text.drawable = infoText;
         text.position.x = 10;
@@ -255,14 +254,9 @@ class Editor: Scene
                         "Radiance\0Albedo\0Normal\0Position\0Roughness\0Metallic", 
                         game.deferredRenderer.outputMode, 6, 25, NKVec2(260, 200));
                 
-                gui.layoutRowDynamic(25, 3);
-                gui.label("Glow threshold:", NK_TEXT_LEFT);
-                gui.slider(0.0f, &game.postProcRenderer.glowThreshold, 1.0f, 0.01f);
-                game.postProcRenderer.glowThreshold = gui.property("", 0.0f, game.postProcRenderer.glowThreshold, 1.0f, 0.01f, 0.005f);
-                
-                gui.label("Glow intensity:", NK_TEXT_LEFT);
-                gui.slider(0.0f, &game.postProcRenderer.glowIntensity, 1.0f, 0.01f);
-                game.postProcRenderer.glowIntensity = gui.property("", 0.0f, game.postProcRenderer.glowIntensity, 1.0f, 0.01f, 0.005f);
+                gui.layoutRowDynamic(25, 1);
+                game.postProcRenderer.glowThreshold = gui.property("Glow threshold:", 0.0f, game.postProcRenderer.glowThreshold, 1.0f, 0.01f, 0.005f);
+                game.postProcRenderer.glowIntensity = gui.property("Glow intensity:", 0.0f, game.postProcRenderer.glowIntensity, 1.0f, 0.01f, 0.005f);
                 
                 gui.layoutRowDynamic(30, 1);
                 game.postProcRenderer.glowRadius = gui.property("Glow radius:", 1, game.postProcRenderer.glowRadius, 10, 1, 1);
@@ -272,10 +266,8 @@ class Editor: Scene
                         "None\0Reinhard\0Hable\0ACES", 
                         game.postProcRenderer.tonemapper, 4, 25, NKVec2(260, 200));
                 
-                gui.layoutRowDynamic(25, 3);
-                gui.label("Exposure:", NK_TEXT_LEFT);
-                gui.slider(0.0f, &game.postProcRenderer.exposure, 2.0f, 0.01f);
-                game.postProcRenderer.exposure = gui.property("", 0.0f, game.postProcRenderer.exposure, 2.0f, 0.01f, 0.005f);
+                gui.layoutRowDynamic(25, 1);
+                game.postProcRenderer.exposure = gui.property("Exposure:", 0.0f, game.postProcRenderer.exposure, 2.0f, 0.01f, 0.005f);
                 
                 gui.treePop();
             }
@@ -308,13 +300,11 @@ class Editor: Scene
                 diffuseColor.g = gui.property("#G:", 0f, diffuseColor.g, 1.0f, 0.01f, 0.005f);
                 diffuseColor.b = gui.property("#B:", 0f, diffuseColor.b, 1.0f, 0.01f, 0.005f);
                 
-                gui.layoutRowDynamic(30, 2);
-                gui.label("Roughness:", NK_TEXT_LEFT);
-                gui.slider(0.0f, &roughness, 1.0f, 0.01f);
+                gui.layoutRowDynamic(25, 1);
+                roughness = gui.property("Roughness:", 0.0f, roughness, 1.0f, 0.01f, 0.005f);
                 
-                gui.layoutRowDynamic(30, 2);
-                gui.label("Metallic:", NK_TEXT_LEFT);
-                gui.slider(0.0f, &metallic, 1.0f, 0.01f);
+                gui.layoutRowDynamic(25, 1);
+                metallic = gui.property("Metallic:", 0.0f, metallic, 1.0f, 0.01f, 0.005f);
                 gui.treePop();
             }
             
