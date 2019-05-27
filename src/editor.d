@@ -30,6 +30,16 @@ module editor;
 import std.stdio;
 import dagon;
 
+NKColor toNuklearColor(Color4f col)
+{
+    auto c = col.convert(8);
+    return NKColor(
+        cast(ubyte)c.r, 
+        cast(ubyte)c.g, 
+        cast(ubyte)c.b, 
+        cast(ubyte)c.a);
+}
+
 class Editor: Scene
 {
     Game game;
@@ -55,12 +65,15 @@ class Editor: Scene
     TextLine infoText;
     
     NuklearGUI gui;
+    bool envColorPicker = false;
     Color4f envColor = Color4f(0.8f, 0.8f, 1.0f, 1.0f);
     
     float sunPitch = -45.0f;
     float sunTurn = 0.0f;
     
     Color4f diffuseColor;
+    bool diffuseColorPicker = false;
+    
     float roughness = 0.5f;
     float metallic = 0.0f;
     
@@ -247,12 +260,12 @@ class Editor: Scene
         {
             if (gui.treePush(NK_TREE_NODE, "Render", NK_MAXIMIZED))
             {
-                gui.layoutRowDynamic(30, 1);
-                
+                gui.layoutRowDynamic(30, 2);
+                gui.label("Output:", NK_TEXT_LEFT);
                 game.deferredRenderer.outputMode = 
                     cast(DebugOutputMode)gui.comboString(
                         "Radiance\0Albedo\0Normal\0Position\0Roughness\0Metallic", 
-                        game.deferredRenderer.outputMode, 6, 25, NKVec2(260, 200));
+                        game.deferredRenderer.outputMode, 6, 25, NKVec2(120, 200));
                 
                 gui.layoutRowDynamic(25, 1);
                 game.postProcRenderer.glowThreshold = gui.property("Glow threshold:", 0.0f, game.postProcRenderer.glowThreshold, 1.0f, 0.01f, 0.005f);
@@ -261,10 +274,12 @@ class Editor: Scene
                 gui.layoutRowDynamic(30, 1);
                 game.postProcRenderer.glowRadius = gui.property("Glow radius:", 1, game.postProcRenderer.glowRadius, 10, 1, 1);
                 
+                gui.layoutRowDynamic(30, 2);
+                gui.label("Tonemapper:", NK_TEXT_LEFT);
                 game.postProcRenderer.tonemapper = 
                     cast(Tonemapper)gui.comboString(
                         "None\0Reinhard\0Hable\0ACES", 
-                        game.postProcRenderer.tonemapper, 4, 25, NKVec2(260, 200));
+                        game.postProcRenderer.tonemapper, 4, 25, NKVec2(120, 200));
                 
                 gui.layoutRowDynamic(25, 1);
                 game.postProcRenderer.exposure = gui.property("Exposure:", 0.0f, game.postProcRenderer.exposure, 2.0f, 0.01f, 0.005f);
@@ -274,12 +289,26 @@ class Editor: Scene
             
             if (gui.treePush(NK_TREE_NODE, "Environment", NK_MINIMIZED))
             {
-                gui.layoutRowDynamic(180, 1); 
-                envColor = gui.colorPicker(envColor, NK_RGB);
-                gui.layoutRowDynamic(25, 1);
-                envColor.r = gui.property("#R:", 0f, envColor.r, 1.0f, 0.01f, 0.005f);
-                envColor.g = gui.property("#G:", 0f, envColor.g, 1.0f, 0.01f, 0.005f);
-                envColor.b = gui.property("#B:", 0f, envColor.b, 1.0f, 0.01f, 0.005f);
+                gui.layoutRowDynamic(25, 2);
+                gui.label("Background color:", NK_TEXT_LEFT);
+                if (gui.buttonColor(envColor.toNuklearColor)) 
+                    envColorPicker = !envColorPicker;
+                
+                if (envColorPicker)
+                {
+                    NKRect s = NKRect(300, 100, 300, 350);
+                    if (gui.popupBegin(NK_POPUP_STATIC, "Color", NK_WINDOW_CLOSABLE, s))
+                    {
+                        gui.layoutRowDynamic(180, 1);
+                        envColor = gui.colorPicker(envColor, NK_RGB);
+                        gui.layoutRowDynamic(25, 1);
+                        envColor.r = gui.property("#R:", 0f, envColor.r, 1.0f, 0.01f, 0.005f);
+                        envColor.g = gui.property("#G:", 0f, envColor.g, 1.0f, 0.01f, 0.005f);
+                        envColor.b = gui.property("#B:", 0f, envColor.b, 1.0f, 0.01f, 0.005f);
+                        gui.popupEnd();
+                    } 
+                    else envColorPicker = false;
+                }
                 
                 gui.layoutRowDynamic(25, 2);
                 gui.label("Sun pitch:", NK_TEXT_LEFT);
@@ -293,12 +322,26 @@ class Editor: Scene
             
             if (gui.treePush(NK_TREE_NODE, "Material", NK_MAXIMIZED))
             {
-                gui.layoutRowDynamic(180, 1); 
-                diffuseColor = gui.colorPicker(diffuseColor, NK_RGB);
-                gui.layoutRowDynamic(25, 1);
-                diffuseColor.r = gui.property("#R:", 0f, diffuseColor.r, 1.0f, 0.01f, 0.005f);
-                diffuseColor.g = gui.property("#G:", 0f, diffuseColor.g, 1.0f, 0.01f, 0.005f);
-                diffuseColor.b = gui.property("#B:", 0f, diffuseColor.b, 1.0f, 0.01f, 0.005f);
+                gui.layoutRowDynamic(25, 2);
+                gui.label("Diffuse color:", NK_TEXT_LEFT);
+                if (gui.buttonColor(diffuseColor.toNuklearColor)) 
+                    diffuseColorPicker = !diffuseColorPicker;
+                
+                if (diffuseColorPicker)
+                {
+                    NKRect s = NKRect(300, 100, 300, 350);
+                    if (gui.popupBegin(NK_POPUP_STATIC, "Color", NK_WINDOW_CLOSABLE, s))
+                    {
+                        gui.layoutRowDynamic(180, 1); 
+                        diffuseColor = gui.colorPicker(diffuseColor, NK_RGB);
+                        gui.layoutRowDynamic(25, 1);
+                        diffuseColor.r = gui.property("#R:", 0f, diffuseColor.r, 1.0f, 0.01f, 0.005f);
+                        diffuseColor.g = gui.property("#G:", 0f, diffuseColor.g, 1.0f, 0.01f, 0.005f);
+                        diffuseColor.b = gui.property("#B:", 0f, diffuseColor.b, 1.0f, 0.01f, 0.005f);
+                        gui.popupEnd();
+                    } 
+                    else diffuseColorPicker = false;
+                }
                 
                 gui.layoutRowDynamic(25, 1);
                 roughness = gui.property("Roughness:", 0.0f, roughness, 1.0f, 0.01f, 0.005f);
@@ -314,16 +357,6 @@ class Editor: Scene
                 gui.layoutRowDynamic(30, 2);
                 if (gui.optionLabel("on", option == true)) option = true;
                 if (gui.optionLabel("off", option == false)) option = false;
-                gui.treePop();
-            }
-                
-            if (gui.treePush(NK_TREE_NODE, "Create Light", NK_MINIMIZED))
-            {
-                gui.layoutRowDynamic(25, 1);
-                if (gui.buttonLabel("Create"))
-                {
-                    writeln("clicked");
-                }
                 gui.treePop();
             }
                 
