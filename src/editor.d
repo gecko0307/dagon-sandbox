@@ -35,7 +35,13 @@ class Editor: Scene
     Game game;
     
     FontAsset aFont;
-    OBJAsset aSuzanne;
+    
+    OBJAsset aCerberus;
+    TextureAsset aTexCerberusAlbedo;
+    TextureAsset aTexCerberusNormal;
+    TextureAsset aTexCerberusRoughness;
+    TextureAsset aTexCerberusMetallic;
+    
     ImageAsset aHeightmap;
     TextureAsset aTexDesertAlbedo;
     TextureAsset aTexDesertNormal;
@@ -76,12 +82,19 @@ class Editor: Scene
     override void beforeLoad()
     {
         aFont = addFontAsset("data/font/DroidSans.ttf", 14);
-        aSuzanne = addOBJAsset("data/suzanne.obj");
-        aHeightmap = addImageAsset("data/heightmap.png");
-        aTexDesertAlbedo = addTextureAsset("data/desert-albedo.png");
-        aTexDesertNormal = addTextureAsset("data/desert-normal.png");
-        aTexDesertRoughness = addTextureAsset("data/desert-roughness.png");
-        aEnvmap = addTextureAsset("data/venice_sunset_1k.hdr");
+        
+        aCerberus = addOBJAsset("data/cerberus/cerberus.obj");
+        aTexCerberusAlbedo = addTextureAsset("data/cerberus/cerberus-albedo.png");
+        aTexCerberusNormal = addTextureAsset("data/cerberus/cerberus-normal.png");
+        aTexCerberusRoughness = addTextureAsset("data/cerberus/cerberus-roughness.png");
+        aTexCerberusMetallic = addTextureAsset("data/cerberus/cerberus-metallic.png");
+        
+        aHeightmap = addImageAsset("data/terrain/heightmap.png");
+        aTexDesertAlbedo = addTextureAsset("data/terrain/desert-albedo.png");
+        aTexDesertNormal = addTextureAsset("data/terrain/desert-normal.png");
+        aTexDesertRoughness = addTextureAsset("data/terrain/desert-roughness.png");
+        
+        aEnvmap = addTextureAsset("data/TropicalRuins_Env.hdr");
     }
 
     override void onLoad(Time t, float progress)
@@ -120,8 +133,12 @@ class Editor: Scene
         eModel = addEntity();
         eModel.position.y = 7.0f;
         eModel.scaling = Vector3f(1.0f, 1.0f, 1.0f);
-        eModel.drawable = aSuzanne.mesh;
+        eModel.drawable = aCerberus.mesh;
         eModel.material = New!Material(null, assetManager);
+        eModel.material.diffuse = aTexCerberusAlbedo.texture;
+        eModel.material.normal = aTexCerberusNormal.texture;
+        eModel.material.roughness = aTexCerberusRoughness.texture;
+        eModel.material.metallic = aTexCerberusMetallic.texture;
         diffuseColor = Color4f(0.5f, 0.5f, 0.5f, 1.0f);
         
         gui = New!NuklearGUI(eventManager, assetManager);
@@ -157,9 +174,9 @@ class Editor: Scene
             rotationQuaternion!float(Axis.y, degtorad(sunTurn)) *
             rotationQuaternion!float(Axis.x, degtorad(sunPitch));
             
-        eModel.material.diffuse = diffuseColor;
-        eModel.material.roughness = roughness;
-        eModel.material.metallic = metallic;
+        //eModel.material.diffuse = diffuseColor;
+        //eModel.material.roughness = roughness;
+        //eModel.material.metallic = metallic;
     }
 
     override void onKeyDown(int key)
