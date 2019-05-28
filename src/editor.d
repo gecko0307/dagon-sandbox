@@ -30,16 +30,6 @@ module editor;
 import std.stdio;
 import dagon;
 
-NKColor toNuklearColor(Color4f col)
-{
-    auto c = col.convert(8);
-    return NKColor(
-        cast(ubyte)c.r, 
-        cast(ubyte)c.g, 
-        cast(ubyte)c.b, 
-        cast(ubyte)c.a);
-}
-
 class Editor: Scene
 {
     Game game;
@@ -291,7 +281,7 @@ class Editor: Scene
             {
                 gui.layoutRowDynamic(25, 2);
                 gui.label("Background color:", NK_TEXT_LEFT);
-                if (gui.buttonColor(envColor.toNuklearColor)) 
+                if (gui.buttonColor(envColor)) 
                     envColorPicker = !envColorPicker;
                 
                 if (envColorPicker)
@@ -302,9 +292,9 @@ class Editor: Scene
                         gui.layoutRowDynamic(180, 1);
                         envColor = gui.colorPicker(envColor, NK_RGB);
                         gui.layoutRowDynamic(25, 1);
-                        envColor.r = gui.property("#R:", 0f, envColor.r, 1.0f, 0.01f, 0.005f);
-                        envColor.g = gui.property("#G:", 0f, envColor.g, 1.0f, 0.01f, 0.005f);
-                        envColor.b = gui.property("#B:", 0f, envColor.b, 1.0f, 0.01f, 0.005f);
+                        envColor.r = gui.property("#R:", 0.0f, envColor.r, 1.0f, 0.01f, 0.005f);
+                        envColor.g = gui.property("#G:", 0.0f, envColor.g, 1.0f, 0.01f, 0.005f);
+                        envColor.b = gui.property("#B:", 0.0f, envColor.b, 1.0f, 0.01f, 0.005f);
                         gui.popupEnd();
                     } 
                     else envColorPicker = false;
@@ -324,7 +314,7 @@ class Editor: Scene
             {
                 gui.layoutRowDynamic(25, 2);
                 gui.label("Diffuse color:", NK_TEXT_LEFT);
-                if (gui.buttonColor(diffuseColor.toNuklearColor)) 
+                if (gui.buttonColor(diffuseColor)) 
                     diffuseColorPicker = !diffuseColorPicker;
                 
                 if (diffuseColorPicker)
@@ -335,9 +325,9 @@ class Editor: Scene
                         gui.layoutRowDynamic(180, 1); 
                         diffuseColor = gui.colorPicker(diffuseColor, NK_RGB);
                         gui.layoutRowDynamic(25, 1);
-                        diffuseColor.r = gui.property("#R:", 0f, diffuseColor.r, 1.0f, 0.01f, 0.005f);
-                        diffuseColor.g = gui.property("#G:", 0f, diffuseColor.g, 1.0f, 0.01f, 0.005f);
-                        diffuseColor.b = gui.property("#B:", 0f, diffuseColor.b, 1.0f, 0.01f, 0.005f);
+                        diffuseColor.r = gui.property("#R:", 0.0f, diffuseColor.r, 1.0f, 0.01f, 0.005f);
+                        diffuseColor.g = gui.property("#G:", 0.0f, diffuseColor.g, 1.0f, 0.01f, 0.005f);
+                        diffuseColor.b = gui.property("#B:", 0.0f, diffuseColor.b, 1.0f, 0.01f, 0.005f);
                         gui.popupEnd();
                     } 
                     else diffuseColorPicker = false;
