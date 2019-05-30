@@ -112,6 +112,8 @@ class Editor: Scene
         freeview.zoom(-100);
         game.renderer.activeCamera = camera;
         
+        game.deferredRenderer.ssaoPower = 6.0;
+        
         sun = addLight(LightType.Sun);
         sun.position.y = 50.0f;
         sun.shadowEnabled = true;
@@ -271,8 +273,8 @@ class Editor: Scene
                 gui.label("Output:", NK_TEXT_LEFT);
                 game.deferredRenderer.outputMode = 
                     cast(DebugOutputMode)gui.comboString(
-                        "Radiance\0Albedo\0Normal\0Position\0Roughness\0Metallic", 
-                        game.deferredRenderer.outputMode, 6, 25, NKVec2(120, 200));
+                        "Radiance\0Albedo\0Normal\0Position\0Roughness\0Metallic\0Occlusion", 
+                        game.deferredRenderer.outputMode, 7, 25, NKVec2(120, 200));
                 
                 gui.layoutRowDynamic(25, 1);
                 game.postProcRenderer.glowThreshold = gui.property("Glow threshold:", 0.0f, game.postProcRenderer.glowThreshold, 1.0f, 0.01f, 0.005f);
