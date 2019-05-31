@@ -34,6 +34,8 @@ class Editor: Scene
 {
     Game game;
     
+    LoadingScreen loadingScreen;
+    
     FontAsset aFont;
     
     OBJAsset aCerberus;
@@ -77,6 +79,7 @@ class Editor: Scene
     {
         super(game);
         this.game = game;
+        loadingScreen = New!LoadingScreen(game, this);
     }
     
     override void beforeLoad()
@@ -99,6 +102,8 @@ class Editor: Scene
 
     override void onLoad(Time t, float progress)
     {
+        loadingScreen.update(t, progress);
+        loadingScreen.render();
     }
     
     override void afterLoad()
