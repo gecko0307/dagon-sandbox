@@ -279,13 +279,18 @@ class Editor: Scene
                 game.deferredRenderer.outputMode = 
                     cast(DebugOutputMode)gui.comboString(
                         "Radiance\0Albedo\0Normal\0Position\0Roughness\0Metallic\0Occlusion", 
-                        game.deferredRenderer.outputMode, 7, 25, NKVec2(120, 200));
+                        game.deferredRenderer.outputMode, 7, 25, NKVec2(120, 250));
                 
+				gui.layoutRowDynamic(25, 1);
+				game.deferredRenderer.ssaoSamples = gui.property("AO samples:", 1, game.deferredRenderer.ssaoSamples, 25, 1, 1);
+				game.deferredRenderer.ssaoRadius = gui.property("AO radius:", 0.0f, game.deferredRenderer.ssaoRadius, 1.0f, 0.01f, 0.005f);
+                game.deferredRenderer.ssaoPower = gui.property("AO power:", 0.0f, game.deferredRenderer.ssaoPower, 10.0f, 0.01f, 0.01f);
+				
                 gui.layoutRowDynamic(25, 1);
                 game.postProcRenderer.glowThreshold = gui.property("Glow threshold:", 0.0f, game.postProcRenderer.glowThreshold, 1.0f, 0.01f, 0.005f);
                 game.postProcRenderer.glowIntensity = gui.property("Glow intensity:", 0.0f, game.postProcRenderer.glowIntensity, 1.0f, 0.01f, 0.005f);
                 
-                gui.layoutRowDynamic(30, 1);
+                gui.layoutRowDynamic(25, 1);
                 game.postProcRenderer.glowRadius = gui.property("Glow radius:", 1, game.postProcRenderer.glowRadius, 10, 1, 1);
                 
                 gui.layoutRowDynamic(30, 2);
