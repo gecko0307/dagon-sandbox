@@ -38,7 +38,7 @@ class Editor: Scene
     
     FontAsset aFont;
     
-    OBJAsset aCerberus;
+    OBJAsset aMeshCerberus;
     TextureAsset aTexCerberusAlbedo;
     TextureAsset aTexCerberusNormal;
     TextureAsset aTexCerberusRoughness;
@@ -56,7 +56,7 @@ class Editor: Scene
     Light sun;
     
     Entity eTerrain;
-    Entity eModel;
+    Entity eCerberus;
     
     FreeTypeFont font;
     Entity text;
@@ -88,7 +88,7 @@ class Editor: Scene
     {
         aFont = addFontAsset("data/font/DroidSans.ttf", 14);
         
-        aCerberus = addOBJAsset("data/cerberus/cerberus.obj");
+        aMeshCerberus = addOBJAsset("data/cerberus/cerberus.obj");
         aTexCerberusAlbedo = addTextureAsset("data/cerberus/cerberus-albedo.png");
         aTexCerberusNormal = addTextureAsset("data/cerberus/cerberus-normal.png");
         aTexCerberusRoughness = addTextureAsset("data/cerberus/cerberus-roughness.png");
@@ -139,15 +139,14 @@ class Editor: Scene
         eTerrain.drawable = terrain;
         eTerrain.scaling = Vector3f(0.25f, 0.25f, 0.25f);
         
-        eModel = addEntity();
-        eModel.position.y = 7.0f;
-        eModel.scaling = Vector3f(1.0f, 1.0f, 1.0f);
-        eModel.drawable = aCerberus.mesh;
-        eModel.material = New!Material(null, assetManager);
-        eModel.material.diffuse = aTexCerberusAlbedo.texture;
-        eModel.material.normal = aTexCerberusNormal.texture;
-        eModel.material.roughness = aTexCerberusRoughness.texture;
-        eModel.material.metallic = aTexCerberusMetallic.texture;
+        eCerberus = addEntity();
+        eCerberus.position.y = 7.0f;
+        eCerberus.drawable = aMeshCerberus.mesh;
+        eCerberus.material = New!Material(null, assetManager);
+        eCerberus.material.diffuse = aTexCerberusAlbedo.texture;
+        eCerberus.material.normal = aTexCerberusNormal.texture;
+        eCerberus.material.roughness = aTexCerberusRoughness.texture;
+        eCerberus.material.metallic = aTexCerberusMetallic.texture;
         diffuseColor = Color4f(0.5f, 0.5f, 0.5f, 1.0f);
         
         gui = New!NuklearGUI(eventManager, assetManager);
@@ -185,15 +184,15 @@ class Editor: Scene
         
         if (!useTextures)
         {
-            eModel.material.diffuse = diffuseColor;
-            eModel.material.roughness = roughness;
-            eModel.material.metallic = metallic;
+            eCerberus.material.diffuse = diffuseColor;
+            eCerberus.material.roughness = roughness;
+            eCerberus.material.metallic = metallic;
         }
         else
         {
-            eModel.material.diffuse = aTexCerberusAlbedo.texture;
-            eModel.material.roughness = aTexCerberusRoughness.texture;
-            eModel.material.metallic = aTexCerberusMetallic.texture;
+            eCerberus.material.diffuse = aTexCerberusAlbedo.texture;
+            eCerberus.material.roughness = aTexCerberusRoughness.texture;
+            eCerberus.material.metallic = aTexCerberusMetallic.texture;
         }
     }
 
