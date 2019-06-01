@@ -29,7 +29,7 @@ class MyGame: Game
 
 void main(string[] args)
 {
-    MyGame game = New!MyGame(1280, 720, false, "Dagon NG", args);
+    MyGame game = New!MyGame(1280 + 300, 720 + 40, false, "Dagon NG", args);
     game.run();
     Delete(game);
     
