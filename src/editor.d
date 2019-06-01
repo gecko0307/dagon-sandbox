@@ -69,6 +69,8 @@ class Editor: Scene
     float sunPitch = -45.0f;
     float sunTurn = 0.0f;
     
+    int useTextures = 1;
+    
     Color4f diffuseColor;
     bool diffuseColorPicker = false;
     
@@ -180,10 +182,19 @@ class Editor: Scene
         sun.rotation = 
             rotationQuaternion!float(Axis.y, degtorad(sunTurn)) *
             rotationQuaternion!float(Axis.x, degtorad(sunPitch));
-            
-        //eModel.material.diffuse = diffuseColor;
-        //eModel.material.roughness = roughness;
-        //eModel.material.metallic = metallic;
+        
+        if (!useTextures)
+        {
+            eModel.material.diffuse = diffuseColor;
+            eModel.material.roughness = roughness;
+            eModel.material.metallic = metallic;
+        }
+        else
+        {
+            eModel.material.diffuse = aTexCerberusAlbedo.texture;
+            eModel.material.roughness = aTexCerberusRoughness.texture;
+            eModel.material.metallic = aTexCerberusMetallic.texture;
+        }
     }
 
     override void onKeyDown(int key)
@@ -285,6 +296,7 @@ class Editor: Scene
 				game.deferredRenderer.ssaoSamples = gui.property("AO samples:", 1, game.deferredRenderer.ssaoSamples, 25, 1, 1);
 				game.deferredRenderer.ssaoRadius = gui.property("AO radius:", 0.0f, game.deferredRenderer.ssaoRadius, 1.0f, 0.01f, 0.005f);
                 game.deferredRenderer.ssaoPower = gui.property("AO power:", 0.0f, game.deferredRenderer.ssaoPower, 10.0f, 0.01f, 0.01f);
+                game.deferredRenderer.ssaoDenoise = gui.property("AO denoise:", 0.0f, game.deferredRenderer.ssaoDenoise, 1.0f, 0.01f, 0.01f);
 				
                 gui.layoutRowDynamic(25, 1);
                 game.postProcRenderer.glowThreshold = gui.property("Glow threshold:", 0.0f, game.postProcRenderer.glowThreshold, 1.0f, 0.01f, 0.005f);
@@ -341,6 +353,9 @@ class Editor: Scene
             
             if (gui.treePush(NK_TREE_NODE, "Material", NK_MAXIMIZED))
             {
+                gui.layoutRowDynamic(25, 2);
+                gui.checkboxLabel("Textures", &useTextures);
+                
                 gui.layoutRowDynamic(25, 2);
                 gui.label("Diffuse color:", NK_TEXT_LEFT);
                 if (gui.buttonColor(diffuseColor)) 
