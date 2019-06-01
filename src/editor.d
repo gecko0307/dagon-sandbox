@@ -294,7 +294,7 @@ class Editor: Scene
                 
 				gui.layoutRowDynamic(25, 1);
 				game.deferredRenderer.ssaoSamples = gui.property("AO samples:", 1, game.deferredRenderer.ssaoSamples, 25, 1, 1);
-				game.deferredRenderer.ssaoRadius = gui.property("AO radius:", 0.0f, game.deferredRenderer.ssaoRadius, 1.0f, 0.01f, 0.005f);
+				game.deferredRenderer.ssaoRadius = gui.property("AO radius:", 0.05f, game.deferredRenderer.ssaoRadius, 1.0f, 0.01f, 0.005f);
                 game.deferredRenderer.ssaoPower = gui.property("AO power:", 0.0f, game.deferredRenderer.ssaoPower, 10.0f, 0.01f, 0.01f);
                 game.deferredRenderer.ssaoDenoise = gui.property("AO denoise:", 0.0f, game.deferredRenderer.ssaoDenoise, 1.0f, 0.01f, 0.01f);
 				
