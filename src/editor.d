@@ -240,6 +240,11 @@ class Editor: Scene
         if (!freeview.active)
             gui.inputScroll(x, y);
     }
+    
+    override void onDropFile(string filename)
+    {
+        writeln(filename);
+    }
 
     void updateUserInterface(Time t)
     {
