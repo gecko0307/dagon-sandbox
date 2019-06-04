@@ -81,6 +81,7 @@ class Editor: Scene
     
     Light sun;
     Entity eSky;
+    Cubemap envCubemap;
     
     Entity eTerrain;
     Entity eCerberus;
@@ -111,6 +112,8 @@ class Editor: Scene
         loadingScreen = New!LoadingScreen(game, this);
     }
     
+    string envmapPath = "data/TropicalRuins_Env.hdr";
+    
     override void beforeLoad()
     {
         aFont = addFontAsset("data/font/DroidSans.ttf", 14);
@@ -126,7 +129,7 @@ class Editor: Scene
         aTexDesertNormal = addTextureAsset("data/terrain/desert-normal.png");
         aTexDesertRoughness = addTextureAsset("data/terrain/desert-roughness.png");
         
-        aEnvmap = addTextureAsset("data/TropicalRuins_Env.hdr");
+        aEnvmap = addTextureAsset(envmapPath);
     }
 
     override void onLoad(Time t, float progress)
@@ -137,7 +140,7 @@ class Editor: Scene
     
     override void afterLoad()
     {
-        auto envCubemap = New!Cubemap(1024, assetManager);
+        envCubemap = New!Cubemap(1024, assetManager);
         envCubemap.fromEquirectangularMap(aEnvmap.texture);
         environment.ambientMap = envCubemap;
     
@@ -281,6 +284,18 @@ class Editor: Scene
     override void onDropFile(string filename)
     {
         writeln(filename);
+        assetManager.removeAsset(envmapPath);
+        envmapPath = filename;
+        aEnvmap = addTextureAsset(envmapPath, true);
+        
+        if (envCubemap)
+            deleteOwnedObject(envCubemap);
+
+        envCubemap = New!Cubemap(1024, assetManager);
+        envCubemap.fromEquirectangularMap(aEnvmap.texture);
+        
+        environment.ambientMap = envCubemap;
+        eSky.material.diffuse = envCubemap;
     }
 
     void updateUserInterface(Time t)
