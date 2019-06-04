@@ -54,6 +54,7 @@ class Editor: Scene
     FreeviewComponent freeview;
     
     Light sun;
+    Entity eSky;
     
     Entity eTerrain;
     Entity eCerberus;
@@ -126,6 +127,15 @@ class Editor: Scene
         sun.shadowEnabled = true;
         sun.energy = 10.0f;
         
+        eSky = addEntity();
+        eSky.layer = EntityLayer.Background;
+        eSky.drawable = New!ShapeBox(Vector3f(1.0f, 1.0f, 1.0f), assetManager);
+        eSky.scaling = Vector3f(100.0f, 100.0f, 100.0f);
+        eSky.material = New!Material(null, assetManager);
+        eSky.material.depthWrite = false;
+        eSky.material.culling = false;
+        eSky.material.diffuse = envCubemap;
+        
         eTerrain = addEntity();
         eTerrain.position = Vector3f(-64, 0, -64);
         eTerrain.material = New!Material(null, assetManager);
@@ -177,6 +187,8 @@ class Editor: Scene
         environment.backgroundColor = envColor;
         environment.ambientColor = envColor * 0.25f;
         environment.fogColor = envColor;
+        
+        eSky.position = camera.positionAbsolute;
         
         sun.rotation = 
             rotationQuaternion!float(Axis.y, degtorad(sunTurn)) *
