@@ -126,7 +126,7 @@ class Editor: Scene
         aTexDesertNormal = addTextureAsset("data/terrain/desert-normal.png");
         aTexDesertRoughness = addTextureAsset("data/terrain/desert-roughness.png");
         
-        aEnvmap = addTextureAsset("data/kloofendal_48d_partly_cloudy_1k.hdr");
+        aEnvmap = addTextureAsset("data/TropicalRuins_Env.hdr");
     }
 
     override void onLoad(Time t, float progress)
@@ -389,6 +389,11 @@ class Editor: Scene
                 gui.layoutRowDynamic(25, 2);
                 gui.label("Sun turn:", NK_TEXT_LEFT);
                 gui.slider(-180.0f, &sunTurn, 180.0f, 1.0f);
+                
+                gui.layoutRowDynamic(25, 2);
+                gui.label("Sun energy:", NK_TEXT_LEFT);
+                gui.slider(0.0f, &sun.energy, 50.0f, 1.0f);
+                
                 gui.treePop();
             }
             
