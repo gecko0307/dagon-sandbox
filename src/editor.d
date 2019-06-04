@@ -30,6 +30,32 @@ module editor;
 import std.stdio;
 import dagon;
 
+class AttachToCamera: EntityComponent
+{
+    Camera camera;
+    
+    this(EventManager em, Entity e, Camera camera)
+    {
+        super(em, e);
+        this.camera = camera;
+    }
+    
+    override void update(Time time)
+    {
+        entity.position = camera.positionAbsolute;
+
+        entity.transformation =
+            translationMatrix(entity.position) *
+            entity.rotation.toMatrix4x4 *
+            scaleMatrix(entity.scaling);
+        entity.invTransformation = entity.transformation.inverse;
+
+        entity.absoluteTransformation = entity.transformation;
+        entity.invAbsoluteTransformation = entity.invTransformation;
+        entity.prevAbsoluteTransformation = entity.prevTransformation;
+    }
+}
+
 class Editor: Scene
 {
     Game game;
@@ -100,7 +126,7 @@ class Editor: Scene
         aTexDesertNormal = addTextureAsset("data/terrain/desert-normal.png");
         aTexDesertRoughness = addTextureAsset("data/terrain/desert-roughness.png");
         
-        aEnvmap = addTextureAsset("data/TropicalRuins_Env.hdr");
+        aEnvmap = addTextureAsset("data/kloofendal_48d_partly_cloudy_1k.hdr");
     }
 
     override void onLoad(Time t, float progress)
@@ -129,6 +155,7 @@ class Editor: Scene
         
         eSky = addEntity();
         eSky.layer = EntityLayer.Background;
+        auto attach = New!AttachToCamera(eventManager, eSky, camera);
         eSky.drawable = New!ShapeBox(Vector3f(1.0f, 1.0f, 1.0f), assetManager);
         eSky.scaling = Vector3f(100.0f, 100.0f, 100.0f);
         eSky.material = New!Material(null, assetManager);
@@ -187,8 +214,6 @@ class Editor: Scene
         environment.backgroundColor = envColor;
         environment.ambientColor = envColor * 0.25f;
         environment.fogColor = envColor;
-        
-        eSky.position = camera.positionAbsolute;
         
         sun.rotation = 
             rotationQuaternion!float(Axis.y, degtorad(sunTurn)) *
