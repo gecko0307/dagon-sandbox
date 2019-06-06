@@ -112,8 +112,6 @@ class Editor: Scene
         loadingScreen = New!LoadingScreen(game, this);
     }
 
-    string envmapPath = "data/TropicalRuins_Env.hdr";
-
     override void beforeLoad()
     {
         aFont = addFontAsset("data/font/DroidSans.ttf", 14);
@@ -129,7 +127,7 @@ class Editor: Scene
         aTexDesertNormal = addTextureAsset("data/terrain/desert-normal.png");
         aTexDesertRoughness = addTextureAsset("data/terrain/desert-roughness.png");
 
-        aEnvmap = addTextureAsset(envmapPath);
+        aEnvmap = addTextureAsset("data/TropicalRuins_Env.hdr");
     }
 
     override void onLoad(Time t, float progress)
@@ -284,12 +282,10 @@ class Editor: Scene
     override void onDropFile(string filename)
     {
         writeln(filename);
-        assetManager.removeAsset(envmapPath);
-        envmapPath = filename;
-        aEnvmap = addTextureAsset(envmapPath, true);
+        assetManager.reloadAsset(aEnvmap, filename);
 
         if (envCubemap)
-            deleteOwnedObject(envCubemap);
+            assetManager.deleteOwnedObject(envCubemap);
 
         envCubemap = New!Cubemap(1024, assetManager);
         envCubemap.fromEquirectangularMap(aEnvmap.texture);
