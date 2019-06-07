@@ -8,7 +8,7 @@
     ],
 
     "dependencies": {
-        "dagon": {"version": "~dagon-ng", "path": "./dagon"}
+        "dagon": "~dagon-ng"
     },
 
     "buildRequirements":[
