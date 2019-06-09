@@ -55,6 +55,7 @@ class Editor: Scene
 
     Light sun;
     Entity eSky;
+    RayleighShader rayleighShader;
     Cubemap envCubemap;
 
     Entity eTerrain;
@@ -134,6 +135,8 @@ class Editor: Scene
         eSky.drawable = New!ShapeBox(Vector3f(1.0f, 1.0f, 1.0f), assetManager);
         eSky.scaling = Vector3f(100.0f, 100.0f, 100.0f);
         eSky.material = New!Material(assetManager);
+        rayleighShader = New!RayleighShader(assetManager);
+        eSky.material.shader = rayleighShader;
         eSky.material.depthWrite = false;
         eSky.material.culling = false;
         eSky.material.diffuse = envCubemap;
@@ -194,6 +197,8 @@ class Editor: Scene
             rotationQuaternion!float(Axis.y, degtorad(sunTurn)) *
             rotationQuaternion!float(Axis.x, degtorad(sunPitch));
 
+        rayleighShader.sunDirection = -sun.rotation.rotate(Vector3f(0.0f, 0.0f, 1.0f));
+        
         if (!useTextures)
         {
             eCerberus.material.diffuse = diffuseColor;
@@ -369,15 +374,15 @@ class Editor: Scene
 
                 gui.layoutRowDynamic(25, 2);
                 gui.label("Sun pitch:", NK_TEXT_LEFT);
-                gui.slider(-180.0f, &sunPitch, 180.0f, 1.0f);
+                gui.slider(-180.0f, &sunPitch, 180.0f, 0.01f);
 
                 gui.layoutRowDynamic(25, 2);
                 gui.label("Sun turn:", NK_TEXT_LEFT);
-                gui.slider(-180.0f, &sunTurn, 180.0f, 1.0f);
+                gui.slider(-180.0f, &sunTurn, 180.0f, 0.01f);
 
                 gui.layoutRowDynamic(25, 2);
                 gui.label("Sun energy:", NK_TEXT_LEFT);
-                gui.slider(0.0f, &sun.energy, 50.0f, 1.0f);
+                gui.slider(0.0f, &sun.energy, 50.0f, 0.01f);
 
                 gui.treePop();
             }
