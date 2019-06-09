@@ -56,6 +56,7 @@ class Editor: Scene
     Light sun;
     Entity eSky;
     RayleighShader rayleighShader;
+    bool useSky = false;
     Cubemap envCubemap;
 
     Entity eTerrain;
@@ -136,7 +137,6 @@ class Editor: Scene
         eSky.scaling = Vector3f(100.0f, 100.0f, 100.0f);
         eSky.material = New!Material(assetManager);
         rayleighShader = New!RayleighShader(assetManager);
-        eSky.material.shader = rayleighShader;
         eSky.material.depthWrite = false;
         eSky.material.culling = false;
         eSky.material.diffuse = envCubemap;
@@ -198,6 +198,10 @@ class Editor: Scene
             rotationQuaternion!float(Axis.x, degtorad(sunPitch));
 
         rayleighShader.sunDirection = -sun.rotation.rotate(Vector3f(0.0f, 0.0f, 1.0f));
+        if (useSky)
+            eSky.material.shader = rayleighShader;
+        else
+            eSky.material.shader = null;
         
         if (!useTextures)
         {
@@ -371,6 +375,12 @@ class Editor: Scene
                     }
                     else envColorPicker = false;
                 }
+                
+                gui.layoutRowDynamic(25, 1);
+                gui.label("Rayleigh sky:", NK_TEXT_LEFT);
+                gui.layoutRowDynamic(25, 2);
+                if (gui.optionLabel("on", useSky == true)) useSky = true;
+                if (gui.optionLabel("off", useSky == false)) useSky = false;
 
                 gui.layoutRowDynamic(25, 2);
                 gui.label("Sun pitch:", NK_TEXT_LEFT);
