@@ -58,6 +58,8 @@ class Editor: Scene
     RayleighShader rayleighShader;
     bool useSky = false;
     Cubemap envCubemap;
+    
+    ShapeSphere lightSphere;
 
     Entity eTerrain;
     Entity eCerberus;
@@ -129,6 +131,10 @@ class Editor: Scene
         sun.position.y = 50.0f;
         sun.shadowEnabled = true;
         sun.energy = 10.0f;
+        
+        lightSphere = New!ShapeSphere(1.0f, 24, 16, false, assetManager);
+        addLightBall(Vector3f(0, 12, -8), Color4f(1.0, 0.5, 0.0, 1.0), 10.0f, 1.0f, 20.0f);
+        addLightBall(Vector3f(0, 12, 8),  Color4f(0.0, 0.5, 1.0, 1.0), 10.0f, 1.0f, 20.0f);
 
         eSky = addEntity();
         eSky.layer = EntityLayer.Background;
@@ -175,6 +181,27 @@ class Editor: Scene
         text.drawable = infoText;
         text.position.x = 10;
         text.position.y = eventManager.windowHeight - 10;
+    }
+    
+    Light addLightBall(Vector3f pos, Color4f color, float energy, float areaRadius, float volumeRadius)
+    {
+        auto light = addLight(LightType.AreaSphere);
+        light.castShadow = false;
+        light.position = pos;
+        light.color = color;
+        light.energy = energy;
+        light.radius = areaRadius;
+        light.volumeRadius = volumeRadius;
+
+        auto lightGeom = addEntity(light);
+        lightGeom.drawable = lightSphere;
+        lightGeom.scaling = Vector3f(areaRadius, areaRadius, areaRadius);
+        lightGeom.material = New!Material(assetManager);
+        lightGeom.material.diffuse = color;
+        lightGeom.material.emission = color;
+        lightGeom.material.energy = energy;
+
+        return light;
     }
 
     char[100] textBuffer;
