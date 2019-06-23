@@ -142,8 +142,8 @@ class Editor: Scene
         sun.color = sunColor;
         
         lightSphere = New!ShapeSphere(1.0f, 24, 16, false, assetManager);
-        //addLightBall(Vector3f(0, 12, -8), Color4f(1.0, 0.5, 0.0, 1.0), 10.0f, 1.0f, 20.0f);
-        //addLightBall(Vector3f(0, 12, 8),  Color4f(0.0, 0.5, 1.0, 1.0), 10.0f, 1.0f, 20.0f);
+        addLightBall(Vector3f(0, 18, -8), Color4f(1.0, 0.5, 0.0, 1.0), 10.0f, 1.0f, 20.0f);
+        addLightBall(Vector3f(0, 18, 8),  Color4f(0.0, 0.5, 1.0, 1.0), 10.0f, 1.0f, 20.0f);
 
         eSky = addEntity();
         eSky.layer = EntityLayer.Background;
@@ -457,10 +457,10 @@ class Editor: Scene
                 
                 gui.layoutRowDynamic(25, 2);
                 int sc = sun.scatteringEnabled;
-                gui.checkboxLabel("Volumetric:", &sc);
+                gui.checkboxLabel("Volumetric light", &sc);
                 sun.scatteringEnabled = cast(bool)sc;
                 gui.layoutRowDynamic(25, 2);
-                gui.label("Scattering:", NK_TEXT_LEFT);
+                gui.label("Light scattering:", NK_TEXT_LEFT);
                 gui.slider(0.0f, &sun.scattering, 1.0f, 0.01f);
 
                 gui.treePop();
