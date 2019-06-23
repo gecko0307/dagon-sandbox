@@ -131,6 +131,8 @@ class Editor: Scene
         sun.position.y = 50.0f;
         sun.shadowEnabled = true;
         sun.energy = 10.0f;
+        sun.scatteringEnabled = true;
+        sun.scattering = 0.4;
         
         lightSphere = New!ShapeSphere(1.0f, 24, 16, false, assetManager);
         addLightBall(Vector3f(0, 12, -8), Color4f(1.0, 0.5, 0.0, 1.0), 10.0f, 1.0f, 20.0f);
