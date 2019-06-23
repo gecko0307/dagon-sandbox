@@ -37,6 +37,8 @@ class Editor: Scene
     LoadingScreen loadingScreen;
 
     FontAsset aFont;
+    
+    OBJAsset aMeshBuilding;
 
     OBJAsset aMeshCerberus;
     TextureAsset aTexCerberusAlbedo;
@@ -71,6 +73,8 @@ class Editor: Scene
     NuklearGUI gui;
     bool envColorPicker = false;
     Color4f envColor = Color4f(0.8f, 0.8f, 1.0f, 1.0f);
+    bool sunColorPicker = false;
+    Color4f sunColor = Color4f(1.0f, 1.0f, 1.0f, 1.0f);
 
     float sunPitch = -45.0f;
     float sunTurn = 0.0f;
@@ -93,6 +97,8 @@ class Editor: Scene
     override void beforeLoad()
     {
         aFont = addFontAsset("data/font/DroidSans.ttf", 14);
+        
+        aMeshBuilding = addOBJAsset("data/building/building.obj");
 
         aMeshCerberus = addOBJAsset("data/cerberus/cerberus.obj");
         aTexCerberusAlbedo = addTextureAsset("data/cerberus/cerberus-albedo.png");
@@ -131,12 +137,13 @@ class Editor: Scene
         sun.position.y = 50.0f;
         sun.shadowEnabled = true;
         sun.energy = 10.0f;
-        sun.scatteringEnabled = true;
-        sun.scattering = 0.4;
+        sun.scatteringEnabled = false;
+        sun.scattering = 0.8f;
+        sun.color = sunColor;
         
         lightSphere = New!ShapeSphere(1.0f, 24, 16, false, assetManager);
-        addLightBall(Vector3f(0, 12, -8), Color4f(1.0, 0.5, 0.0, 1.0), 10.0f, 1.0f, 20.0f);
-        addLightBall(Vector3f(0, 12, 8),  Color4f(0.0, 0.5, 1.0, 1.0), 10.0f, 1.0f, 20.0f);
+        //addLightBall(Vector3f(0, 12, -8), Color4f(1.0, 0.5, 0.0, 1.0), 10.0f, 1.0f, 20.0f);
+        //addLightBall(Vector3f(0, 12, 8),  Color4f(0.0, 0.5, 1.0, 1.0), 10.0f, 1.0f, 20.0f);
 
         eSky = addEntity();
         eSky.layer = EntityLayer.Background;
@@ -161,9 +168,14 @@ class Editor: Scene
         auto terrain = New!Terrain(512, 64, heightmap, assetManager);
         eTerrain.drawable = terrain;
         eTerrain.scaling = Vector3f(0.25f, 0.25f, 0.25f);
+        
+        auto eBuilding = addEntity();
+        eBuilding.drawable = aMeshBuilding.mesh;
+        eBuilding.position.z = 10.0f;
+        eBuilding.position.y = 4.0f;
 
         eCerberus = addEntity();
-        eCerberus.position.y = 7.0f;
+        eCerberus.position.y = 14.0f;
         eCerberus.drawable = aMeshCerberus.mesh;
         eCerberus.material = New!Material(assetManager);
         eCerberus.material.diffuse = aTexCerberusAlbedo.texture;
@@ -225,6 +237,7 @@ class Editor: Scene
         sun.rotation =
             rotationQuaternion!float(Axis.y, degtorad(sunTurn)) *
             rotationQuaternion!float(Axis.x, degtorad(sunPitch));
+        sun.color = sunColor;
 
         rayleighShader.sunDirection = -sun.rotation.rotate(Vector3f(0.0f, 0.0f, 1.0f));
         if (useSky)
@@ -388,7 +401,6 @@ class Editor: Scene
                 gui.label("Background color:", NK_TEXT_LEFT);
                 if (gui.buttonColor(envColor))
                     envColorPicker = !envColorPicker;
-
                 if (envColorPicker)
                 {
                     NKRect s = NKRect(300, 100, 300, 350);
@@ -403,6 +415,26 @@ class Editor: Scene
                         gui.popupEnd();
                     }
                     else envColorPicker = false;
+                }
+                
+                gui.layoutRowDynamic(25, 2);
+                gui.label("Sun color:", NK_TEXT_LEFT);
+                if (gui.buttonColor(sunColor))
+                    sunColorPicker = !sunColorPicker;
+                if (sunColorPicker)
+                {
+                    NKRect s = NKRect(300, 100, 300, 350);
+                    if (gui.popupBegin(NK_POPUP_STATIC, "Color", NK_WINDOW_CLOSABLE, s))
+                    {
+                        gui.layoutRowDynamic(180, 1);
+                        sunColor = gui.colorPicker(sunColor, NK_RGB);
+                        gui.layoutRowDynamic(25, 1);
+                        sunColor.r = gui.property("#R:", 0.0f, sunColor.r, 1.0f, 0.01f, 0.005f);
+                        sunColor.g = gui.property("#G:", 0.0f, sunColor.g, 1.0f, 0.01f, 0.005f);
+                        sunColor.b = gui.property("#B:", 0.0f, sunColor.b, 1.0f, 0.01f, 0.005f);
+                        gui.popupEnd();
+                    }
+                    else sunColorPicker = false;
                 }
                 
                 gui.layoutRowDynamic(25, 1);
@@ -422,6 +454,14 @@ class Editor: Scene
                 gui.layoutRowDynamic(25, 2);
                 gui.label("Sun energy:", NK_TEXT_LEFT);
                 gui.slider(0.0f, &sun.energy, 50.0f, 0.01f);
+                
+                gui.layoutRowDynamic(25, 2);
+                int sc = sun.scatteringEnabled;
+                gui.checkboxLabel("Volumetric:", &sc);
+                sun.scatteringEnabled = cast(bool)sc;
+                gui.layoutRowDynamic(25, 2);
+                gui.label("Scattering:", NK_TEXT_LEFT);
+                gui.slider(0.0f, &sun.scattering, 1.0f, 0.01f);
 
                 gui.treePop();
             }
