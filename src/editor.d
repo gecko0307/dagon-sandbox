@@ -464,7 +464,7 @@ class Editor: Scene
                 gui.slider(0.0f, &sun.scattering, 1.0f, 0.01f);
                 gui.layoutRowDynamic(25, 2);
                 gui.label("Medium density:", NK_TEXT_LEFT);
-                gui.slider(0.0f, &sun.scatteringDensity, 1.0f, 0.01f);
+                gui.slider(0.0f, &sun.mediumDensity, 1.0f, 0.01f);
 
                 gui.treePop();
             }
