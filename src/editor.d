@@ -460,10 +460,10 @@ class Editor: Scene
                 gui.checkboxLabel("Volumetric light", &sc);
                 sun.scatteringEnabled = cast(bool)sc;
                 gui.layoutRowDynamic(25, 2);
-                gui.label("Light scattering:", NK_TEXT_LEFT);
+                gui.label("Scattering:", NK_TEXT_LEFT);
                 gui.slider(0.0f, &sun.scattering, 1.0f, 0.01f);
                 gui.layoutRowDynamic(25, 2);
-                gui.label("Light scattering density:", NK_TEXT_LEFT);
+                gui.label("Medium density:", NK_TEXT_LEFT);
                 gui.slider(0.0f, &sun.scatteringDensity, 1.0f, 0.01f);
 
                 gui.treePop();
