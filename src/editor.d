@@ -28,6 +28,7 @@ DEALINGS IN THE SOFTWARE.
 module editor;
 
 import std.stdio;
+import std.random;
 import dagon;
 
 class Editor: Scene
@@ -182,6 +183,26 @@ class Editor: Scene
         eCerberus.material.roughness = aTexCerberusRoughness.texture;
         eCerberus.material.metallic = aTexCerberusMetallic.texture;
         diffuseColor = Color4f(0.5f, 0.5f, 0.5f, 1.0f);
+        
+        /*
+        auto sphereHi = New!ShapeSphere(1.0f, 24, 16, false, assetManager);
+        auto sphereMid = New!ShapeSphere(1.0f, 12, 8, false, assetManager);
+        auto sphereLow = New!ShapeSphere(1.0f, 6, 4, false, assetManager);
+        auto mRed = New!Material(assetManager);
+        mRed.diffuse = Color4f(1.0f, 0.0f, 0.0f, 1.0f);
+        auto lod = New!LODDrawable(assetManager);
+        lod.addLevel(sphereHi, mRed, 0.0f, 50.0f, 0.0f);
+        lod.addLevel(sphereMid, mRed, 50.0f, 100.0f, 0.0f);
+        lod.addLevel(sphereLow, mRed, 100.0f, 500.0f, 0.0f);
+        Vector3f center = Vector3f(0.0f, 0.0f, 0.0f);
+        foreach(i; 0..100)
+        {
+            auto eLod = addEntity();
+            eLod.drawable = lod;
+            eLod.position = center + randomUnitVector3!float() * uniform(2.0f, 50.0f);
+            eLod.position.y = terrain.getHeight(eTerrain, eLod.position);
+        }
+        */
 
         gui = New!NuklearGUI(eventManager, assetManager);
         gui.addFont(aFont, 18, gui.localeGlyphRanges);
