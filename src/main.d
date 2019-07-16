@@ -27,16 +27,13 @@ class MyGame: Game
     }
 }
 
-version(Mimalloc)
-{
-    import bindbc.mimalloc;
-    import mimallocator;
-}
-
 void main(string[] args)
 {
     version(Mimalloc)
     {
+        import bindbc.mimalloc;
+        import mimallocator;
+
         writeln("Using mimalloc");
         loadMimalloc();
         globalAllocator = Mimallocator.instance();
