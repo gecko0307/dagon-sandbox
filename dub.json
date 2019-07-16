@@ -8,7 +8,7 @@
     ],
 
     "dependencies": {
-        "dagon": "~dagon-ng"
+        "dagon": "~dagon-ng",
     },
 
     "buildRequirements":[
@@ -23,6 +23,16 @@
         {
             "name": "application",
             "targetType": "executable"
+        },
+        {
+            "name": "mimalloc",
+            "targetType": "executable",
+            "dependencies": {
+                "bindbc-loader": "~>0.2.1"
+            },
+            "versions": ["Mimalloc"],
+            "copyFiles-windows-x86": ["lib/x86/*.dll"],
+            "copyFiles-windows-x86_64": ["lib/x64/*.dll"]
         }
-    ]
+    ],
 }
