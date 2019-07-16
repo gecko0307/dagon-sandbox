@@ -37,6 +37,7 @@ void main(string[] args)
 {
     version(Mimalloc)
     {
+        writeln("Using mimalloc");
         loadMimalloc();
         globalAllocator = Mimallocator.instance();
     }
