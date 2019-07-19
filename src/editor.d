@@ -36,22 +36,27 @@ class Editor: Scene
     Game game;
 
     LoadingScreen loadingScreen;
+    
 
     FontAsset aFont;
-    
+
     OBJAsset aMeshBuilding;
 
-    OBJAsset aMeshCerberus;
-    TextureAsset aTexCerberusAlbedo;
-    TextureAsset aTexCerberusNormal;
-    TextureAsset aTexCerberusRoughness;
-    TextureAsset aTexCerberusMetallic;
+    OBJAsset aMeshGun;
+    TextureAsset aTexGunAlbedo;
+    TextureAsset aTexGunNormal;
+    TextureAsset aTexGunRoughness;
+    TextureAsset aTexGunMetallic;
 
     ImageAsset aHeightmap;
     TextureAsset aTexDesertAlbedo;
     TextureAsset aTexDesertNormal;
     TextureAsset aTexDesertRoughness;
     TextureAsset aEnvmap;
+
+    OBJAsset aGrassHi;
+    OBJAsset aGrassLow;
+    TextureAsset aGrass;
 
     Camera camera;
     FreeviewComponent freeview;
@@ -61,11 +66,11 @@ class Editor: Scene
     RayleighShader rayleighShader;
     bool useSky = true;
     Cubemap envCubemap;
-    
+
     ShapeSphere lightSphere;
 
     Entity eTerrain;
-    Entity eCerberus;
+    Entity eGun;
 
     FreeTypeFont font;
     Entity text;
@@ -98,14 +103,14 @@ class Editor: Scene
     override void beforeLoad()
     {
         aFont = addFontAsset("data/font/DroidSans.ttf", 14);
-        
+
         aMeshBuilding = addOBJAsset("data/building/building.obj");
 
-        aMeshCerberus = addOBJAsset("data/cerberus/cerberus.obj");
-        aTexCerberusAlbedo = addTextureAsset("data/cerberus/cerberus-albedo.png");
-        aTexCerberusNormal = addTextureAsset("data/cerberus/cerberus-normal.png");
-        aTexCerberusRoughness = addTextureAsset("data/cerberus/cerberus-roughness.png");
-        aTexCerberusMetallic = addTextureAsset("data/cerberus/cerberus-metallic.png");
+        aMeshGun = addOBJAsset("data/cerberus/cerberus.obj");
+        aTexGunAlbedo = addTextureAsset("data/cerberus/cerberus-albedo.png");
+        aTexGunNormal = addTextureAsset("data/cerberus/cerberus-normal.png");
+        aTexGunRoughness = addTextureAsset("data/cerberus/cerberus-roughness.png");
+        aTexGunMetallic = addTextureAsset("data/cerberus/cerberus-metallic.png");
 
         aHeightmap = addImageAsset("data/terrain/heightmap.png");
         aTexDesertAlbedo = addTextureAsset("data/terrain/desert-albedo.png");
@@ -113,6 +118,10 @@ class Editor: Scene
         aTexDesertRoughness = addTextureAsset("data/terrain/desert-roughness.png");
 
         aEnvmap = addTextureAsset("data/TropicalRuins_Env.hdr");
+
+        aGrassHi = addOBJAsset("data/bush/grass-hi.obj");
+        aGrassLow = addOBJAsset("data/bush/grass-low.obj");
+        aGrass = addTextureAsset("data/bush/grass.png");
     }
 
     override void onLoad(Time t, float progress)
@@ -133,6 +142,7 @@ class Editor: Scene
         game.renderer.activeCamera = camera;
 
         game.deferredRenderer.ssaoPower = 6.0;
+        game.postProcRenderer.motionBlurFramerate = 30;
 
         sun = addLight(LightType.Sun);
         sun.position.y = 50.0f;
@@ -140,10 +150,10 @@ class Editor: Scene
         sun.energy = 10.0f;
         sun.scatteringEnabled = false;
         sun.color = sunColor;
-        
+
         lightSphere = New!ShapeSphere(1.0f, 24, 16, false, assetManager);
-        addLightBall(Vector3f(0, 18, -8), Color4f(1.0, 0.5, 0.0, 1.0), 10.0f, 1.0f, 20.0f);
-        addLightBall(Vector3f(0, 18, 8),  Color4f(0.0, 0.5, 1.0, 1.0), 10.0f, 1.0f, 20.0f);
+        addLightBall(Vector3f(0, 8, -8), Color4f(1.0, 0.5, 0.0, 1.0), 10.0f, 1.0f, 20.0f);
+        addLightBall(Vector3f(0, 8, 8),  Color4f(0.0, 0.5, 1.0, 1.0), 10.0f, 1.0f, 20.0f);
 
         eSky = addEntity();
         eSky.layer = EntityLayer.Background;
@@ -168,32 +178,31 @@ class Editor: Scene
         auto terrain = New!Terrain(512, 64, heightmap, assetManager);
         eTerrain.drawable = terrain;
         eTerrain.scaling = Vector3f(0.25f, 0.25f, 0.25f);
-        
-        auto eBuilding = addEntity();
-        eBuilding.drawable = aMeshBuilding.mesh;
-        eBuilding.position.z = 10.0f;
-        eBuilding.position.y = 4.0f;
 
-        eCerberus = addEntity();
-        eCerberus.position.y = 14.0f;
-        eCerberus.drawable = aMeshCerberus.mesh;
-        eCerberus.material = New!Material(assetManager);
-        eCerberus.material.diffuse = aTexCerberusAlbedo.texture;
-        eCerberus.material.normal = aTexCerberusNormal.texture;
-        eCerberus.material.roughness = aTexCerberusRoughness.texture;
-        eCerberus.material.metallic = aTexCerberusMetallic.texture;
+        eGun = addEntity();
+        eGun.position.y = 14.0f;
+        eGun.drawable = aMeshGun.mesh;
+        eGun.material = New!Material(assetManager);
+        eGun.material.diffuse = aTexGunAlbedo.texture;
+        eGun.material.normal = aTexGunNormal.texture;
+        eGun.material.roughness = aTexGunRoughness.texture;
+        eGun.material.metallic = aTexGunMetallic.texture;
+        eGun.material.energy = 2.0f;
         diffuseColor = Color4f(0.5f, 0.5f, 0.5f, 1.0f);
-        
-        /*
-        auto sphereHi = New!ShapeSphere(1.0f, 24, 16, false, assetManager);
-        auto sphereMid = New!ShapeSphere(1.0f, 12, 8, false, assetManager);
-        auto sphereLow = New!ShapeSphere(1.0f, 6, 4, false, assetManager);
-        auto mRed = New!Material(assetManager);
-        mRed.diffuse = Color4f(1.0f, 0.0f, 0.0f, 1.0f);
+
+        auto mGrassHi = New!Material(assetManager);
+        mGrassHi.diffuse = aGrass.texture;
+        mGrassHi.roughness = 0.95f;
+        mGrassHi.sphericalNormal = true;
+        auto mGrassLow = New!Material(assetManager);
+        mGrassLow.diffuse = aGrass.texture;
+        mGrassLow.culling = false;
+        mGrassLow.roughness = 0.95f;
+        mGrassLow.sphericalNormal = true;
+
         auto lod = New!LODDrawable(assetManager);
-        lod.addLevel(sphereHi, mRed, 0.0f, 50.0f, 0.0f);
-        lod.addLevel(sphereMid, mRed, 50.0f, 100.0f, 0.0f);
-        lod.addLevel(sphereLow, mRed, 100.0f, 500.0f, 0.0f);
+        lod.addLevel(aGrassHi.mesh, mGrassHi, 0.0f, 50.0f, 0.0f);
+        lod.addLevel(aGrassLow.mesh, mGrassLow, 50.0f, 500.0f, 0.0f);
         Vector3f center = Vector3f(0.0f, 0.0f, 0.0f);
         foreach(i; 0..100)
         {
@@ -201,8 +210,8 @@ class Editor: Scene
             eLod.drawable = lod;
             eLod.position = center + randomUnitVector3!float() * uniform(2.0f, 50.0f);
             eLod.position.y = terrain.getHeight(eTerrain, eLod.position);
+            eLod.scale(3);
         }
-        */
 
         gui = New!NuklearGUI(eventManager, assetManager);
         gui.addFont(aFont, 18, gui.localeGlyphRanges);
@@ -216,7 +225,7 @@ class Editor: Scene
         text.position.x = 10;
         text.position.y = eventManager.windowHeight - 10;
     }
-    
+
     Light addLightBall(Vector3f pos, Color4f color, float energy, float areaRadius, float volumeRadius)
     {
         auto light = addLight(LightType.AreaSphere);
@@ -264,18 +273,18 @@ class Editor: Scene
             eSky.material.shader = rayleighShader;
         else
             eSky.material.shader = null;
-        
+
         if (!useTextures)
         {
-            eCerberus.material.diffuse = diffuseColor;
-            eCerberus.material.roughness = roughness;
-            eCerberus.material.metallic = metallic;
+            eGun.material.diffuse = diffuseColor;
+            eGun.material.roughness = roughness;
+            eGun.material.metallic = metallic;
         }
         else
         {
-            eCerberus.material.diffuse = aTexCerberusAlbedo.texture;
-            eCerberus.material.roughness = aTexCerberusRoughness.texture;
-            eCerberus.material.metallic = aTexCerberusMetallic.texture;
+            eGun.material.diffuse = aTexGunAlbedo.texture;
+            eGun.material.roughness = aTexGunRoughness.texture;
+            eGun.material.metallic = aTexGunMetallic.texture;
         }
     }
 
@@ -436,7 +445,7 @@ class Editor: Scene
                     }
                     else envColorPicker = false;
                 }
-                
+
                 gui.layoutRowDynamic(25, 2);
                 gui.label("Sun color:", NK_TEXT_LEFT);
                 if (gui.buttonColor(sunColor))
@@ -456,7 +465,7 @@ class Editor: Scene
                     }
                     else sunColorPicker = false;
                 }
-                
+
                 gui.layoutRowDynamic(25, 1);
                 gui.label("Rayleigh sky:", NK_TEXT_LEFT);
                 gui.layoutRowDynamic(25, 2);
@@ -474,7 +483,7 @@ class Editor: Scene
                 gui.layoutRowDynamic(25, 2);
                 gui.label("Sun energy:", NK_TEXT_LEFT);
                 gui.slider(0.0f, &sun.energy, 50.0f, 0.01f);
-                
+
                 gui.layoutRowDynamic(25, 2);
                 int sc = sun.scatteringEnabled;
                 gui.checkboxLabel("Volumetric light", &sc);
