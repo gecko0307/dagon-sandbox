@@ -142,7 +142,10 @@ class Editor: Scene
         game.renderer.activeCamera = camera;
 
         game.deferredRenderer.ssaoPower = 6.0;
-        game.postProcRenderer.motionBlurFramerate = 30;
+        game.postProcessingRenderer.motionBlurEnabled = true;
+        game.postProcessingRenderer.glowEnabled = true;
+        game.postProcessingRenderer.fxaaEnabled = true;
+        game.postProcessingRenderer.motionBlurFramerate = 30;
 
         sun = addLight(LightType.Sun);
         sun.position.y = 50.0f;
@@ -405,21 +408,21 @@ class Editor: Scene
                 game.deferredRenderer.ssaoDenoise = gui.property("AO denoise:", 0.0f, game.deferredRenderer.ssaoDenoise, 1.0f, 0.01f, 0.01f);
 
                 gui.layoutRowDynamic(25, 1);
-                game.postProcRenderer.glowThreshold = gui.property("Glow threshold:", 0.0f, game.postProcRenderer.glowThreshold, 1.0f, 0.01f, 0.005f);
-                game.postProcRenderer.glowIntensity = gui.property("Glow intensity:", 0.0f, game.postProcRenderer.glowIntensity, 1.0f, 0.01f, 0.005f);
+                game.postProcessingRenderer.glowThreshold = gui.property("Glow threshold:", 0.0f, game.postProcessingRenderer.glowThreshold, 1.0f, 0.01f, 0.005f);
+                game.postProcessingRenderer.glowIntensity = gui.property("Glow intensity:", 0.0f, game.postProcessingRenderer.glowIntensity, 1.0f, 0.01f, 0.005f);
 
                 gui.layoutRowDynamic(25, 1);
-                game.postProcRenderer.glowRadius = gui.property("Glow radius:", 1, game.postProcRenderer.glowRadius, 10, 1, 1);
+                game.postProcessingRenderer.glowRadius = gui.property("Glow radius:", 1, game.postProcessingRenderer.glowRadius, 10, 1, 1);
 
                 gui.layoutRowDynamic(30, 2);
                 gui.label("Tonemapper:", NK_TEXT_LEFT);
-                game.postProcRenderer.tonemapper =
+                game.postProcessingRenderer.tonemapper =
                     cast(Tonemapper)gui.comboString(
                         "None\0Reinhard\0Hable\0ACES",
-                        game.postProcRenderer.tonemapper, 4, 25, NKVec2(120, 200));
+                        game.postProcessingRenderer.tonemapper, 4, 25, NKVec2(120, 200));
 
                 gui.layoutRowDynamic(25, 1);
-                game.postProcRenderer.exposure = gui.property("Exposure:", 0.0f, game.postProcRenderer.exposure, 2.0f, 0.01f, 0.005f);
+                game.postProcessingRenderer.exposure = gui.property("Exposure:", 0.0f, game.postProcessingRenderer.exposure, 2.0f, 0.01f, 0.005f);
 
                 gui.treePop();
             }
