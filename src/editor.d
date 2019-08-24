@@ -34,9 +34,7 @@ import dagon;
 class Editor: Scene
 {
     Game game;
-
     LoadingScreen loadingScreen;
-
 
     FontAsset aFont;
 
@@ -49,9 +47,18 @@ class Editor: Scene
     TextureAsset aTexGunMetallic;
 
     ImageAsset aHeightmap;
+    
+    TextureAsset aSplatmapPavement;
+    TextureAsset aSplatmapGrass;
+    
     TextureAsset aTexDesertAlbedo;
     TextureAsset aTexDesertNormal;
     TextureAsset aTexDesertRoughness;
+    TextureAsset aTexGrassAlbedo;
+    TextureAsset aTexGrassNormal;
+    TextureAsset aTexPavementAlbedo;
+    TextureAsset aTexPavementNormal;
+    
     TextureAsset aEnvmap;
 
     OBJAsset aGrassHi;
@@ -113,10 +120,19 @@ class Editor: Scene
         aTexGunMetallic = addTextureAsset("data/cerberus/cerberus-metallic.png");
 
         aHeightmap = addImageAsset("data/terrain/heightmap.png");
+        aSplatmapPavement = addTextureAsset("data/terrain/splatmap-pavement.png");
+        aSplatmapGrass = addTextureAsset("data/terrain/splatmap-grass.png");
+        
         aTexDesertAlbedo = addTextureAsset("data/terrain/desert-albedo.png");
         aTexDesertNormal = addTextureAsset("data/terrain/desert-normal.png");
         aTexDesertRoughness = addTextureAsset("data/terrain/desert-roughness.png");
-
+        
+        aTexPavementAlbedo = addTextureAsset("data/terrain/pavement-albedo.png");
+        aTexPavementNormal = addTextureAsset("data/terrain/pavement-normal.png");
+        
+        aTexGrassAlbedo = addTextureAsset("data/terrain/grass-albedo.png");
+        aTexGrassNormal = addTextureAsset("data/terrain/grass-normal.png");
+        
         aEnvmap = addTextureAsset("data/TropicalRuins_Env.hdr");
 
         aGrassHi = addOBJAsset("data/bush/grass-hi.obj");
@@ -172,10 +188,23 @@ class Editor: Scene
         eTerrain = addEntity();
         eTerrain.position = Vector3f(-64, 0, -64);
         eTerrain.material = New!Material(assetManager);
-        eTerrain.material.textureScale = Vector2f(10.0f, 10.0f);
+        
         eTerrain.material.diffuse = aTexDesertAlbedo.texture;
+        eTerrain.material.textureScale = Vector2f(50, 50);
         eTerrain.material.normal = aTexDesertNormal.texture;
-        eTerrain.material.roughness = aTexDesertRoughness.texture;
+        eTerrain.material.roughness = 0.8f;
+
+        eTerrain.material.diffuse2 = aTexGrassAlbedo.texture;
+        eTerrain.material.splatmap2 = aSplatmapGrass.texture;
+        eTerrain.material.textureScale2 = Vector2f(100, 100);
+        eTerrain.material.normal2 = aTexGrassNormal.texture;
+        eTerrain.material.roughness2 = 1.0f;
+        
+        eTerrain.material.diffuse3 = aTexPavementAlbedo.texture;
+        eTerrain.material.splatmap3 = aSplatmapPavement.texture;
+        eTerrain.material.textureScale3 = Vector2f(100, 100);
+        eTerrain.material.normal3 = aTexPavementNormal.texture;
+        eTerrain.material.roughness3 = 0.5f;
 
         auto heightmap = New!ImageHeightmap(aHeightmap.image, 30.0f, assetManager);
         auto terrain = New!Terrain(512, 64, heightmap, assetManager);
