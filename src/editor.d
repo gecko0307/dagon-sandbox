@@ -171,8 +171,8 @@ class Editor: Scene
         sun.color = sunColor;
 
         lightSphere = New!ShapeSphere(1.0f, 24, 16, false, assetManager);
-        addLightBall(Vector3f(0, 8, -8), Color4f(1.0, 0.5, 0.0, 1.0), 10.0f, 1.0f, 20.0f);
-        addLightBall(Vector3f(0, 8, 8),  Color4f(0.0, 0.5, 1.0, 1.0), 10.0f, 1.0f, 20.0f);
+        //addLightBall(Vector3f(0, 8, -8), Color4f(1.0, 0.5, 0.0, 1.0), 10.0f, 1.0f, 20.0f);
+        //addLightBall(Vector3f(0, 8, 8),  Color4f(0.0, 0.5, 1.0, 1.0), 10.0f, 1.0f, 20.0f);
 
         eSky = addEntity();
         eSky.layer = EntityLayer.Background;
@@ -220,16 +220,18 @@ class Editor: Scene
         eGun.material.roughness = aTexGunRoughness.texture;
         eGun.material.metallic = aTexGunMetallic.texture;
         eGun.material.energy = 2.0f;
+        eGun.visible = false;
         diffuseColor = Color4f(0.5f, 0.5f, 0.5f, 1.0f);
 
         auto mGrassHi = New!Material(assetManager);
         mGrassHi.diffuse = aGrass.texture;
-        mGrassHi.roughness = 0.95f;
-        mGrassHi.sphericalNormal = true;
+        mGrassHi.roughness = 1;
+        mGrassHi.specularity = 0;
         auto mGrassLow = New!Material(assetManager);
         mGrassLow.diffuse = aGrass.texture;
         mGrassLow.culling = false;
-        mGrassLow.roughness = 0.95f;
+        mGrassLow.roughness = 1;
+        mGrassLow.specularity = 0;
         mGrassLow.sphericalNormal = true;
 
         auto lod = New!LODDrawable(assetManager);
