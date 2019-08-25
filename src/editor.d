@@ -60,6 +60,8 @@ class Editor: Scene
     TextureAsset aTexPavementNormal;
     
     TextureAsset aEnvmap;
+    
+    TextureAsset aTexDecalLeaves;
 
     OBJAsset aGrassHi;
     OBJAsset aGrassLow;
@@ -138,6 +140,8 @@ class Editor: Scene
         aGrassHi = addOBJAsset("data/bush/grass-hi.obj");
         aGrassLow = addOBJAsset("data/bush/grass-low.obj");
         aGrass = addTextureAsset("data/bush/grass.png");
+        
+        aTexDecalLeaves = addTextureAsset("data/decals/leaves1.png");
     }
 
     override void onLoad(Time t, float progress)
@@ -186,6 +190,7 @@ class Editor: Scene
         eSky.material.diffuse = envCubemap;
 
         eTerrain = addEntity();
+        eTerrain.dynamic = false;
         eTerrain.position = Vector3f(-64, 0, -64);
         eTerrain.material = New!Material(assetManager);
         
@@ -238,6 +243,7 @@ class Editor: Scene
         lod.addLevel(aGrassHi.mesh, mGrassHi, 0.0f, 50.0f, 0.0f);
         lod.addLevel(aGrassLow.mesh, mGrassLow, 50.0f, 500.0f, 0.0f);
         Vector3f center = Vector3f(0.0f, 0.0f, 0.0f);
+
         foreach(i; 0..100)
         {
             auto eLod = addEntity();
@@ -246,6 +252,21 @@ class Editor: Scene
             eLod.position.y = terrain.getHeight(eTerrain, eLod.position);
             eLod.scale(3);
         }
+        
+        auto leavesDecalMaterial = New!Material(assetManager);
+        leavesDecalMaterial.diffuse = aTexDecalLeaves.texture;
+        leavesDecalMaterial.blending = Transparent;
+        leavesDecalMaterial.depthWrite = false;
+        leavesDecalMaterial.culling = false;
+        leavesDecalMaterial.outputColor = true;
+        leavesDecalMaterial.outputNormal = false;
+        leavesDecalMaterial.outputPBR = false;
+        
+        auto decal = addDecal();
+        decal.position = Vector3f(20, 0, 0);
+        decal.scale(2.0f);
+        decal.position.y = terrain.getHeight(eTerrain, decal.position);
+        decal.material = leavesDecalMaterial;
 
         gui = New!NuklearGUI(eventManager, assetManager);
         gui.addFont(aFont, 18, gui.localeGlyphRanges);
