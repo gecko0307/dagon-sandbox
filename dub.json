@@ -8,7 +8,7 @@
     ],
 
     "dependencies": {
-        "dagon": "~dagon-ng",
+        "dagon": "~master",
     },
 
     "buildRequirements":[
