@@ -160,7 +160,7 @@ class Editor: Scene
 
     override void afterLoad()
     {
-        envCubemap = New!Cubemap(1024, assetManager);
+        envCubemap = addCubemap(1024);
         //envCubemap.fromEquirectangularMap(aEnvmap.texture);
         envCubemap.setFaceImage(CubeFace.PositiveZ, aTexSkyFront.image);
         envCubemap.setFaceImage(CubeFace.NegativeZ, aTexSkyBack.image);
@@ -200,7 +200,7 @@ class Editor: Scene
         auto psync = New!PositionSync(eventManager, eSky, camera);
         eSky.drawable = New!ShapeBox(Vector3f(1.0f, 1.0f, 1.0f), assetManager);
         eSky.scaling = Vector3f(100.0f, 100.0f, 100.0f);
-        eSky.material = New!Material(assetManager);
+        eSky.material = addMaterial();
         rayleighShader = New!RayleighShader(assetManager);
         eSky.material.depthWrite = false;
         eSky.material.culling = false;
@@ -209,7 +209,7 @@ class Editor: Scene
         eTerrain = addEntity();
         eTerrain.dynamic = false;
         eTerrain.position = Vector3f(-64, 0, -64);
-        eTerrain.material = New!Material(assetManager);
+        eTerrain.material = addMaterial();
         
         eTerrain.material.diffuse = aTexDesertAlbedo.texture;
         eTerrain.material.textureScale = Vector2f(50, 50);
@@ -236,7 +236,7 @@ class Editor: Scene
         eGun = addEntity();
         eGun.position.y = 14.0f;
         eGun.drawable = aMeshGun.mesh;
-        eGun.material = New!Material(assetManager);
+        eGun.material = addMaterial();
         eGun.material.diffuse = aTexGunAlbedo.texture;
         eGun.material.normal = aTexGunNormal.texture;
         eGun.material.roughness = aTexGunRoughness.texture;
@@ -245,11 +245,11 @@ class Editor: Scene
         eGun.visible = false;
         diffuseColor = Color4f(0.5f, 0.5f, 0.5f, 1.0f);
 
-        auto mBushHi = New!Material(assetManager);
+        auto mBushHi = addMaterial();
         mBushHi.diffuse = aBush.texture;
         mBushHi.roughness = 1;
         mBushHi.specularity = 0;
-        auto mBushLow = New!Material(assetManager);
+        auto mBushLow = addMaterial();
         mBushLow.diffuse = aBush.texture;
         mBushLow.culling = false;
         mBushLow.roughness = 1;
@@ -270,7 +270,7 @@ class Editor: Scene
             eLod.scale(3);
         }
         
-        auto leavesDecalMaterial = New!Material(assetManager);
+        auto leavesDecalMaterial = addMaterial();
         leavesDecalMaterial.diffuse = aTexDecalLeaves.texture;
         leavesDecalMaterial.blending = Transparent;
         leavesDecalMaterial.depthWrite = false;
@@ -311,7 +311,7 @@ class Editor: Scene
         auto lightGeom = addEntity(light);
         lightGeom.drawable = lightSphere;
         lightGeom.scaling = Vector3f(areaRadius, areaRadius, areaRadius);
-        lightGeom.material = New!Material(assetManager);
+        lightGeom.material = addMaterial();
         lightGeom.material.diffuse = color;
         lightGeom.material.emission = color;
         lightGeom.material.energy = energy;
