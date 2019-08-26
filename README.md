@@ -1,5 +1,5 @@
-# Dagon Editor
-Work-in-progress scene editor for [Dagon](https://github.com/gecko0307/dagon). Based on [NG](https://github.com/gecko0307/dagon/tree/dagon-ng) branch of the engine. Editor features are not fully implemented yet, it's more of a demo sandbox for Dagon NG at the moment.
+# Dagon Sandbox
+Work-in-progress scene editor for [Dagon](https://github.com/gecko0307/dagon). Editor features are not fully implemented yet, it's more of a demo sandbox for upcoming Dagon 0.11 at the moment.
 
 [![Screenshot2](https://1.bp.blogspot.com/-IaDVtXOtJZw/XWG0FeJPFuI/AAAAAAAAEHQ/lk9WdRFGlegSSt0hnNLFEdGw_6XyrS7NgCLcBGAs/s1600/ng-terrain-bushes.jpg)](https://1.bp.blogspot.com/-IaDVtXOtJZw/XWG0FeJPFuI/AAAAAAAAEHQ/lk9WdRFGlegSSt0hnNLFEdGw_6XyrS7NgCLcBGAs/s1600/ng-terrain-bushes.jpg)
 
