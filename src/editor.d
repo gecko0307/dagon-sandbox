@@ -38,8 +38,6 @@ class Editor: Scene
 
     FontAsset aFont;
 
-    OBJAsset aMeshBuilding;
-
     OBJAsset aMeshGun;
     TextureAsset aTexGunAlbedo;
     TextureAsset aTexGunNormal;
@@ -53,7 +51,6 @@ class Editor: Scene
     
     TextureAsset aTexDesertAlbedo;
     TextureAsset aTexDesertNormal;
-    TextureAsset aTexDesertRoughness;
     TextureAsset aTexGrassAlbedo;
     TextureAsset aTexGrassNormal;
     TextureAsset aTexPavementAlbedo;
@@ -70,9 +67,9 @@ class Editor: Scene
     
     TextureAsset aTexDecalLeaves;
 
-    OBJAsset aGrassHi;
-    OBJAsset aGrassLow;
-    TextureAsset aGrass;
+    OBJAsset aBushHi;
+    OBJAsset aBushLow;
+    TextureAsset aBush;
 
     Camera camera;
     FreeviewComponent freeview;
@@ -120,8 +117,6 @@ class Editor: Scene
     {
         aFont = addFontAsset("data/font/DroidSans.ttf", 14);
 
-        aMeshBuilding = addOBJAsset("data/building/building.obj");
-
         aMeshGun = addOBJAsset("data/cerberus/cerberus.obj");
         aTexGunAlbedo = addTextureAsset("data/cerberus/cerberus-albedo.png");
         aTexGunNormal = addTextureAsset("data/cerberus/cerberus-normal.png");
@@ -134,7 +129,6 @@ class Editor: Scene
         
         aTexDesertAlbedo = addTextureAsset("data/terrain/desert-albedo.png");
         aTexDesertNormal = addTextureAsset("data/terrain/desert-normal.png");
-        aTexDesertRoughness = addTextureAsset("data/terrain/desert-roughness.png");
         
         aTexPavementAlbedo = addTextureAsset("data/terrain/pavement-albedo.png");
         aTexPavementNormal = addTextureAsset("data/terrain/pavement-normal.png");
@@ -151,9 +145,9 @@ class Editor: Scene
         aTexSkyTop = addImageAsset("data/skybox/sky_top.png");
         aTexSkyBottom = addImageAsset("data/skybox/sky_bottom.png");
 
-        aGrassHi = addOBJAsset("data/bush/grass-hi.obj");
-        aGrassLow = addOBJAsset("data/bush/grass-low.obj");
-        aGrass = addTextureAsset("data/bush/grass.png");
+        aBushHi = addOBJAsset("data/bush/bush-hi.obj");
+        aBushLow = addOBJAsset("data/bush/bush-low.obj");
+        aBush = addTextureAsset("data/bush/bush.png");
         
         aTexDecalLeaves = addTextureAsset("data/decals/leaves1.png");
     }
@@ -250,20 +244,20 @@ class Editor: Scene
         eGun.visible = false;
         diffuseColor = Color4f(0.5f, 0.5f, 0.5f, 1.0f);
 
-        auto mGrassHi = New!Material(assetManager);
-        mGrassHi.diffuse = aGrass.texture;
-        mGrassHi.roughness = 1;
-        mGrassHi.specularity = 0;
-        auto mGrassLow = New!Material(assetManager);
-        mGrassLow.diffuse = aGrass.texture;
-        mGrassLow.culling = false;
-        mGrassLow.roughness = 1;
-        mGrassLow.specularity = 0;
-        mGrassLow.sphericalNormal = true;
+        auto mBushHi = New!Material(assetManager);
+        mBushHi.diffuse = aBush.texture;
+        mBushHi.roughness = 1;
+        mBushHi.specularity = 0;
+        auto mBushLow = New!Material(assetManager);
+        mBushLow.diffuse = aBush.texture;
+        mBushLow.culling = false;
+        mBushLow.roughness = 1;
+        mBushLow.specularity = 0;
+        mBushLow.sphericalNormal = true;
 
         auto lod = New!LODDrawable(assetManager);
-        lod.addLevel(aGrassHi.mesh, mGrassHi, 0.0f, 50.0f, 0.0f);
-        lod.addLevel(aGrassLow.mesh, mGrassLow, 50.0f, 500.0f, 0.0f);
+        lod.addLevel(aBushHi.mesh, mBushHi, 0.0f, 50.0f, 0.0f);
+        lod.addLevel(aBushLow.mesh, mBushLow, 50.0f, 500.0f, 0.0f);
         Vector3f center = Vector3f(0.0f, 0.0f, 0.0f);
 
         foreach(i; 0..100)
