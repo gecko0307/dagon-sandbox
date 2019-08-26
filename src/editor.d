@@ -247,6 +247,7 @@ class Editor: Scene
 
         auto mBushHi = addMaterial();
         mBushHi.diffuse = aBush.texture;
+        mBushHi.culling = false;
         mBushHi.roughness = 1;
         mBushHi.specularity = 0;
         auto mBushLow = addMaterial();
