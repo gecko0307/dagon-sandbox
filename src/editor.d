@@ -98,8 +98,8 @@ class Editor: Scene
     bool sunColorPicker = false;
     Color4f sunColor = Color4f(1.0f, 0.7f, 0.5f, 1.0f);
 
-    float sunPitch = -45.0f;
-    float sunTurn = 0.0f;
+    float sunPitch = -25.0f;
+    float sunTurn = 135.0f;
 
     int useTextures = 1;
 
@@ -178,7 +178,9 @@ class Editor: Scene
 
         camera = addCamera();
         freeview = New!FreeviewComponent(eventManager, camera);
-        freeview.zoom(-100);
+        freeview.zoom(-20);
+        freeview.pitch(-30.0f);
+        freeview.turn(10.0f);
         game.renderer.activeCamera = camera;
 
         game.deferredRenderer.ssaoPower = 6.0;
@@ -191,7 +193,7 @@ class Editor: Scene
         sun.position.y = 50.0f;
         sun.shadowEnabled = true;
         sun.energy = 10.0f;
-        sun.scatteringEnabled = false;
+        sun.scatteringEnabled = true;
         sun.color = sunColor;
 
         lightSphere = New!ShapeSphere(1.0f, 24, 16, false, assetManager);
