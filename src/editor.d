@@ -59,7 +59,14 @@ class Editor: Scene
     TextureAsset aTexPavementAlbedo;
     TextureAsset aTexPavementNormal;
     
-    TextureAsset aEnvmap;
+    //TextureAsset aEnvmap;
+    
+    ImageAsset aTexSkyFront;
+    ImageAsset aTexSkyBack;
+    ImageAsset aTexSkyLeft;
+    ImageAsset aTexSkyRight;
+    ImageAsset aTexSkyTop;
+    ImageAsset aTexSkyBottom;
     
     TextureAsset aTexDecalLeaves;
 
@@ -73,7 +80,7 @@ class Editor: Scene
     Light sun;
     Entity eSky;
     RayleighShader rayleighShader;
-    bool useSky = true;
+    bool useSky = false;
     Cubemap envCubemap;
 
     ShapeSphere lightSphere;
@@ -135,7 +142,14 @@ class Editor: Scene
         aTexGrassAlbedo = addTextureAsset("data/terrain/grass-albedo.png");
         aTexGrassNormal = addTextureAsset("data/terrain/grass-normal.png");
         
-        aEnvmap = addTextureAsset("data/TropicalRuins_Env.hdr");
+        //aEnvmap = addTextureAsset("data/TropicalRuins_Env.hdr");
+        
+        aTexSkyFront = addImageAsset("data/skybox/sky_front.png");
+        aTexSkyBack = addImageAsset("data/skybox/sky_back.png");
+        aTexSkyLeft = addImageAsset("data/skybox/sky_left.png");
+        aTexSkyRight = addImageAsset("data/skybox/sky_right.png");
+        aTexSkyTop = addImageAsset("data/skybox/sky_top.png");
+        aTexSkyBottom = addImageAsset("data/skybox/sky_bottom.png");
 
         aGrassHi = addOBJAsset("data/bush/grass-hi.obj");
         aGrassLow = addOBJAsset("data/bush/grass-low.obj");
@@ -153,7 +167,13 @@ class Editor: Scene
     override void afterLoad()
     {
         envCubemap = New!Cubemap(1024, assetManager);
-        envCubemap.fromEquirectangularMap(aEnvmap.texture);
+        //envCubemap.fromEquirectangularMap(aEnvmap.texture);
+        envCubemap.setFaceImage(CubeFace.PositiveZ, aTexSkyFront.image);
+        envCubemap.setFaceImage(CubeFace.NegativeZ, aTexSkyBack.image);
+        envCubemap.setFaceImage(CubeFace.PositiveX, aTexSkyRight.image);
+        envCubemap.setFaceImage(CubeFace.NegativeX, aTexSkyLeft.image);
+        envCubemap.setFaceImage(CubeFace.PositiveY, aTexSkyTop.image);
+        envCubemap.setFaceImage(CubeFace.NegativeY, aTexSkyBottom.image);
         environment.ambientMap = envCubemap;
 
         camera = addCamera();
@@ -390,6 +410,7 @@ class Editor: Scene
             gui.inputScroll(x, y);
     }
 
+    /*
     override void onDropFile(string filename)
     {
         writeln(filename);
@@ -404,6 +425,7 @@ class Editor: Scene
         environment.ambientMap = envCubemap;
         eSky.material.diffuse = envCubemap;
     }
+    */
 
     void updateMenu()
     {
