@@ -177,6 +177,7 @@ class Editor: Scene
         freeview.turn(10.0f);
         game.renderer.activeCamera = camera;
 
+        game.deferredRenderer.ssaoEnabled = true;
         game.deferredRenderer.ssaoPower = 6.0;
         game.postProcessingRenderer.motionBlurEnabled = true;
         game.postProcessingRenderer.glowEnabled = true;
