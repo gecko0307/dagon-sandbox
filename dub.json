@@ -9,7 +9,8 @@
 
     "dependencies": {
         "dagon": "~master",
-        "dagon:nuklear": "~master"
+        "dagon:nuklear": "~master",
+        "dagon:ftfont": "~master"
     },
 
     "buildRequirements":[

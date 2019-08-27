@@ -30,7 +30,8 @@ module editor;
 import std.stdio;
 import std.random;
 import dagon;
-import dagon.extra.nuklear;
+import dagon.ext.nuklear;
+import dagon.ext.ftfont;
 
 class Editor: Scene
 {
@@ -116,7 +117,7 @@ class Editor: Scene
 
     override void beforeLoad()
     {
-        aFont = addFontAsset("data/font/DroidSans.ttf", 14);
+        aFont = this.addFontAsset("data/font/DroidSans.ttf", 14);
 
         aMeshGun = addOBJAsset("data/cerberus/cerberus.obj");
         aTexGunAlbedo = addTextureAsset("data/cerberus/cerberus-albedo.png");
