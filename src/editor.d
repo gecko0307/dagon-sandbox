@@ -30,6 +30,7 @@ module editor;
 import std.stdio;
 import std.random;
 import dagon;
+import dagon.extra.nuklear;
 
 class Editor: Scene
 {
