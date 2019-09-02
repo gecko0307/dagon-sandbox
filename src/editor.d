@@ -29,6 +29,7 @@ module editor;
 
 import std.stdio;
 import std.random;
+import std.math;
 import dagon;
 import dagon.ext.nuklear;
 import dagon.ext.ftfont;
@@ -275,11 +276,13 @@ class Editor: Scene
         lod.addLevel(aBushLow.mesh, mBushLow, 50.0f, 500.0f, 0.0f);
         Vector3f center = Vector3f(0.0f, 0.0f, 0.0f);
 
-        foreach(i; 0..30)
+        foreach(i; 0..100)
         {
             auto eLod = addEntity();
             eLod.drawable = lod;
-            eLod.position = lerp(center, randomUnitVector3!float() * 50.0f, uniform(0.0f, 1.0f));
+            float rnd = uniform(0.4f, 1.0f);
+            Vector2f pos = randomUnitVector2!float() * 50.0f;
+            eLod.position = lerp(center, Vector3f(pos.x, 0.0f, pos.y), rnd);
             eLod.position.y = terrain.getHeight(eTerrain, eLod.position);
             eLod.scale(3);
         }
