@@ -279,7 +279,7 @@ class Editor: Scene
         {
             auto eLod = addEntity();
             eLod.drawable = lod;
-            eLod.position = center + randomUnitVector3!float() * uniform(2.0f, 50.0f);
+            eLod.position = lerp(center, randomUnitVector3!float() * 50.0f, uniform(0.0f, 1.0f));
             eLod.position.y = terrain.getHeight(eTerrain, eLod.position);
             eLod.scale(3);
         }
