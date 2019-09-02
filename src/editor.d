@@ -239,9 +239,8 @@ class Editor: Scene
         eTerrain.drawable = terrain;
         eTerrain.scaling = Vector3f(0.25f, 0.25f, 0.25f);
 
-        // Root entity from aScene
         useEntity(aScene.entity);
-        aScene.entity.position.y = 5.2f;
+        aScene.entity.position.y = 5.8f;
         foreach(name, asset; aScene.entities)
         {
             useEntity(asset.entity);
