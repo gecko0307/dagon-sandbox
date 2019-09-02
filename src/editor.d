@@ -46,27 +46,29 @@ class Editor: Scene
     TextureAsset aTexGunRoughness;
     TextureAsset aTexGunMetallic;
 
+    PackageAsset aScene;
+
     ImageAsset aHeightmap;
-    
+
     TextureAsset aSplatmapPavement;
     TextureAsset aSplatmapGrass;
-    
+
     TextureAsset aTexDesertAlbedo;
     TextureAsset aTexDesertNormal;
     TextureAsset aTexGrassAlbedo;
     TextureAsset aTexGrassNormal;
     TextureAsset aTexPavementAlbedo;
     TextureAsset aTexPavementNormal;
-    
+
     //TextureAsset aEnvmap;
-    
+
     ImageAsset aTexSkyFront;
     ImageAsset aTexSkyBack;
     ImageAsset aTexSkyLeft;
     ImageAsset aTexSkyRight;
     ImageAsset aTexSkyTop;
     ImageAsset aTexSkyBottom;
-    
+
     TextureAsset aTexDecalLeaves;
 
     OBJAsset aBushHi;
@@ -125,21 +127,23 @@ class Editor: Scene
         aTexGunRoughness = addTextureAsset("data/cerberus/cerberus-roughness.png");
         aTexGunMetallic = addTextureAsset("data/cerberus/cerberus-metallic.png");
 
+        aScene = addPackageAsset("data/village/village.asset");
+
         aHeightmap = addImageAsset("data/terrain/heightmap.png");
         aSplatmapPavement = addTextureAsset("data/terrain/splatmap-pavement.png");
         aSplatmapGrass = addTextureAsset("data/terrain/splatmap-grass.png");
-        
+
         aTexDesertAlbedo = addTextureAsset("data/terrain/desert-albedo.png");
         aTexDesertNormal = addTextureAsset("data/terrain/desert-normal.png");
-        
+
         aTexPavementAlbedo = addTextureAsset("data/terrain/pavement-albedo.png");
         aTexPavementNormal = addTextureAsset("data/terrain/pavement-normal.png");
-        
+
         aTexGrassAlbedo = addTextureAsset("data/terrain/grass-albedo.png");
         aTexGrassNormal = addTextureAsset("data/terrain/grass-normal.png");
-        
+
         //aEnvmap = addTextureAsset("data/TropicalRuins_Env.hdr");
-        
+
         aTexSkyFront = addImageAsset("data/skybox/sky_front.png");
         aTexSkyBack = addImageAsset("data/skybox/sky_back.png");
         aTexSkyLeft = addImageAsset("data/skybox/sky_left.png");
@@ -150,7 +154,7 @@ class Editor: Scene
         aBushHi = addOBJAsset("data/bush/bush-hi.obj");
         aBushLow = addOBJAsset("data/bush/bush-low.obj");
         aBush = addTextureAsset("data/bush/bush.png");
-        
+
         aTexDecalLeaves = addTextureAsset("data/decals/leaves1.png");
     }
 
@@ -212,7 +216,7 @@ class Editor: Scene
         eTerrain.dynamic = false;
         eTerrain.position = Vector3f(-64, 0, -64);
         eTerrain.material = addMaterial();
-        
+
         eTerrain.material.diffuse = aTexDesertAlbedo.texture;
         eTerrain.material.textureScale = Vector2f(50, 50);
         eTerrain.material.normal = aTexDesertNormal.texture;
@@ -223,7 +227,7 @@ class Editor: Scene
         eTerrain.material.textureScale2 = Vector2f(100, 100);
         eTerrain.material.normal2 = aTexGrassNormal.texture;
         eTerrain.material.roughness2 = 1.0f;
-        
+
         eTerrain.material.diffuse3 = aTexPavementAlbedo.texture;
         eTerrain.material.splatmap3 = aSplatmapPavement.texture;
         eTerrain.material.textureScale3 = Vector2f(100, 100);
@@ -234,6 +238,14 @@ class Editor: Scene
         auto terrain = New!Terrain(512, 64, heightmap, assetManager);
         eTerrain.drawable = terrain;
         eTerrain.scaling = Vector3f(0.25f, 0.25f, 0.25f);
+
+        // Root entity from aScene
+        useEntity(aScene.entity);
+        aScene.entity.position.y = 5.2f;
+        foreach(name, asset; aScene.entities)
+        {
+            useEntity(asset.entity);
+        }
 
         eGun = addEntity();
         eGun.position.y = 14.0f;
@@ -264,7 +276,7 @@ class Editor: Scene
         lod.addLevel(aBushLow.mesh, mBushLow, 50.0f, 500.0f, 0.0f);
         Vector3f center = Vector3f(0.0f, 0.0f, 0.0f);
 
-        foreach(i; 0..100)
+        foreach(i; 0..30)
         {
             auto eLod = addEntity();
             eLod.drawable = lod;
@@ -272,7 +284,7 @@ class Editor: Scene
             eLod.position.y = terrain.getHeight(eTerrain, eLod.position);
             eLod.scale(3);
         }
-        
+
         auto leavesDecalMaterial = addMaterial();
         leavesDecalMaterial.diffuse = aTexDecalLeaves.texture;
         leavesDecalMaterial.blending = Transparent;
@@ -281,7 +293,7 @@ class Editor: Scene
         leavesDecalMaterial.outputColor = true;
         leavesDecalMaterial.outputNormal = false;
         leavesDecalMaterial.outputPBR = false;
-        
+
         auto decal = addDecal();
         decal.position = Vector3f(20, 0, 0);
         decal.scale(2.0f);
