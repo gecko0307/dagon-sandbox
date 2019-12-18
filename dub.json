@@ -10,7 +10,8 @@
     "dependencies": {
         "dagon": "~master",
         "dagon:nuklear": "~master",
-        "dagon:ftfont": "~master"
+        "dagon:ftfont": "~master",
+        "bindbc-assimp": "0.0.1-beta1"
     },
 
     "buildRequirements":[
@@ -20,6 +21,8 @@
     "sourcePaths": ["src"],
     "importPaths": ["src"],
     "mainSourceFile": "src/main.d",
+    "copyFiles-windows-x86": ["lib/x86/*.dll"],
+    "copyFiles-windows-x86_64": ["lib/x64/*.dll"],
 
     "configurations": [
         {
@@ -32,9 +35,7 @@
             "dependencies": {
                 "bindbc-loader": "~>0.2.1"
             },
-            "versions": ["Mimalloc"],
-            "copyFiles-windows-x86": ["lib/x86/*.dll"],
-            "copyFiles-windows-x86_64": ["lib/x64/*.dll"]
+            "versions": ["Mimalloc"]
         }
     ]
 }

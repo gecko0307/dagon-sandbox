@@ -4,6 +4,8 @@ import std.stdio;
 import dagon;
 import editor;
 
+import bindbc.assimp;
+
 class MyGame: Game
 {
     this(uint w, uint h, bool fullscreen, string title, string[] args)
@@ -26,7 +28,6 @@ class MyGame: Game
     }
 }
 
-
 void main(string[] args)
 {
     /*
@@ -40,6 +41,15 @@ void main(string[] args)
         globalAllocator = Mimallocator.instance();
     }
     */
+
+    AssimpSupport assimpSupport = loadAssimp();
+    if (assimpSupport != AssimpSupport.assimp500)
+    {
+        if (assimpSupport == AssimpSupport.badLibrary)
+           writeln("Warning: failed to load some Assimp functions. It seems that you have an old version of Assimp. Dagon will try to use it, but it is recommended to install Assimp 5");
+       else
+           exitWithError("Error: Assimp library is not found. Please, install Assimp 5");
+    }
 
     //enableMemoryProfiler(true);
 
