@@ -34,6 +34,8 @@ import dagon;
 import dagon.ext.nuklear;
 import dagon.ext.ftfont;
 
+import assimp;
+
 class Editor: Scene
 {
     Game game;
@@ -60,7 +62,7 @@ class Editor: Scene
     TextureAsset aTexGrassNormal;
     TextureAsset aTexPavementAlbedo;
     TextureAsset aTexPavementNormal;
-    
+
     TextureAsset aTexSmokeDiffuse;
 
     //TextureAsset aEnvmap;
@@ -114,6 +116,8 @@ class Editor: Scene
     float metallic = 0.0f;
     float energy = 0.0f;
 
+    AssimpAsset assimpAsset;
+
     this(Game game)
     {
         super(game);
@@ -145,7 +149,7 @@ class Editor: Scene
 
         aTexGrassAlbedo = addTextureAsset("data/terrain/grass-albedo.png");
         aTexGrassNormal = addTextureAsset("data/terrain/grass-normal.png");
-        
+
         aTexSmokeDiffuse = addTextureAsset("data/particles/smoke-diffuse.png");
 
         //aEnvmap = addTextureAsset("data/TropicalRuins_Env.hdr");
@@ -162,6 +166,9 @@ class Editor: Scene
         aBush = addTextureAsset("data/bush/bush.png");
 
         aTexDecalLeaves = addTextureAsset("data/decals/leaves1.png");
+
+        assimpAsset = New!AssimpAsset(assetManager);
+        addAsset(assimpAsset, "data/suzanne.obj");
     }
 
     override void onLoad(Time t, float progress)
@@ -263,17 +270,17 @@ class Editor: Scene
         eGun.material.energy = 0.0f;
         eGun.visible = false;
         diffuseColor = Color4f(0.5f, 0.5f, 0.5f, 1.0f);
-        
+
         auto mParticlesSmoke = addMaterial();
         mParticlesSmoke.diffuse = aTexSmokeDiffuse.texture;
         //mParticlesSmoke.normal = aTexParticleDustNormal.texture;
         mParticlesSmoke.blending = Transparent;
         mParticlesSmoke.depthWrite = false;
         mParticlesSmoke.energy = 1.0f;
-        
+
         auto eParticleSystem = addEntity();
         auto particleSystem = New!ParticleSystem(eventManager, eParticleSystem);
-        
+
         auto eParticlesTest = addEntity();
         auto emitterSmoke = New!Emitter(eParticlesTest, particleSystem, 50);
         emitterSmoke.material = mParticlesSmoke;
@@ -408,7 +415,7 @@ class Editor: Scene
             eGun.material.roughness = aTexGunRoughness.texture;
             eGun.material.metallic = aTexGunMetallic.texture;
         }
-        
+
         eGun.material.emission = diffuseColor;
         eGun.material.energy = energy;
     }
@@ -666,7 +673,7 @@ class Editor: Scene
 
             gui.layoutRowDynamic(25, 1);
             metallic = gui.property("Metallic:", 0.0f, metallic, 1.0f, 0.01f, 0.005f);
-            
+
             gui.layoutRowDynamic(25, 1);
             energy = gui.property("Energy:", 0.0f, energy, 10.0f, 0.01f, 0.005f);
             gui.treePop();
