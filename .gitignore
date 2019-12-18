@@ -36,3 +36,6 @@ docs/
 # Scripts
 *.bat
 *.sh
+
+# Resolve folder
+.resolve

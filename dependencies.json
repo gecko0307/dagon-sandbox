@@ -1,0 +1,11 @@
+{
+    "git": {
+        "dagon": ["https://github.com/gecko0307/dagon", "master"],
+        "dlib": ["https://github.com/gecko0307/dlib", "v0.17.0"],
+        "bindbc-loader": ["https://github.com/BindBC/bindbc-loader", "v0.2.1"],
+        "bindbc-opengl": ["https://github.com/BindBC/bindbc-opengl", "v0.8.0"],
+        "bindbc-sdl": ["https://github.com/BindBC/bindbc-sdl", "v0.8.0"],
+        "bindbc-freetype": ["https://github.com/BindBC/bindbc-freetype", "v0.5.0"],
+        "bindbc-nuklear": ["https://github.com/Timu5/bindbc-nuklear", "v0.3.1"]
+    }
+}
