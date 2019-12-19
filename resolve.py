@@ -12,10 +12,17 @@ dubSelections["fileVersion"] = 1
 dubSelections["versions"] = {}
 
 for depName in deps:
-    dep = deps[depName]
+    s = depName.split(":")
+    packageName = s[0]
+    subpackageName = ""
+    if len(s) > 1:
+        subpackageName = s[1]
+    print(s)
+
+    dep = deps[packageName]
     repoUrl = dep[0]
     branchName = dep[1]
-    dir = ".resolve/" + depName
+    dir = ".resolve/" + packageName
 
     if not os.path.exists(".resolve"):
         os.makedirs(".resolve")
@@ -29,8 +36,12 @@ for depName in deps:
         repo = git.cmd.Git(dir)
         repo.checkout(branchName)
 
-    dubSelections["versions"][depName] = {}
-    dubSelections["versions"][depName]["path"] = dir
+    if subpackageName != "":
+        dubSelections["versions"][depName] = {}
+        dubSelections["versions"][depName]["path"] = dir
+    else:
+        dubSelections["versions"][packageName] = {}
+        dubSelections["versions"][packageName]["path"] = dir
 
 with open("dub.selections.json", "w") as writeFile:
     json.dump(dubSelections, writeFile)
