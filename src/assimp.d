@@ -35,10 +35,34 @@ string extension(string filename)
         return "";
 }
 
-class AssimpModel: Owner, Drawable
+class MultiDrawable: Owner, Drawable
 {
+    DynamicArray!Drawable drawables;
+
+    this(Owner o)
+    {
+        super(o);
+    }
+
+    ~this()
+    {
+        drawables.free();
+    }
+
+    void render(GraphicsState* state)
+    {
+        foreach(d; drawables)
+        {
+            d.render(state);
+        }
+    }
+}
+
+class AssimpModel: Owner
+{
+    Entity rootEntity;
+    DynamicArray!Entity entities;
     DynamicArray!Mesh meshes;
-    // TODO: materials
 
     this(Owner o)
     {
@@ -48,20 +72,65 @@ class AssimpModel: Owner, Drawable
     ~this()
     {
         meshes.free();
+        entities.free();
     }
 
-    void render(GraphicsState* state)
+    void createMeshes(const(aiScene*) scene)
     {
-        foreach(mesh; meshes)
+        foreach(i; 0..scene.mNumMeshes)
         {
-            mesh.render(state);
+            const(aiMesh)* assimpMesh = scene.mMeshes[i];
+            auto mesh = createMesh(assimpMesh);
+            mesh.dataReady = true;
+            meshes.append(mesh);
         }
+    }
+
+    Entity createEntity(const(aiScene*) scene, const(aiNode*)node)
+    {
+        Entity entity = New!Entity(this);
+
+        aiMatrix4x4 t = node.mTransformation;
+        Matrix4x4f transformation = matrixf(
+            t.a1, t.a2, t.a3, t.a4,
+            t.b1, t.b2, t.b3, t.b4,
+            t.c1, t.c2, t.c3, t.c4,
+            t.d1, t.d2, t.d3, t.d4
+        );
+        entity.position = transformation.translation;
+        entity.rotation = Quaternionf.fromMatrix(transformation);
+        entity.scaling = transformation.scaling;
+
+        MultiDrawable md = New!MultiDrawable(this);
+        entity.drawable = md;
+
+        foreach(mi; 0..node.mNumMeshes)
+        {
+            auto meshIndex = node.mMeshes[mi];
+            if (meshIndex < meshes.length)
+            {
+                auto mesh = meshes[node.mMeshes[mi]];
+                md.drawables.append(mesh);
+            }
+
+            // TODO: material
+        }
+
+        foreach(ci; 0..node.mNumChildren)
+        {
+            const(aiNode*)childNode = node.mChildren[ci];
+            auto childEntity = createEntity(scene, childNode);
+            entity.addChild(childEntity);
+        }
+
+        entities.append(entity);
+
+        return entity;
     }
 
     Mesh createMesh(const(aiMesh)* assimpMesh)
     {
         Mesh mesh = New!Mesh(this);
-        meshes.append(mesh);
 
         mesh.vertices = New!(Vector3f[])(assimpMesh.mNumVertices);
         mesh.normals = New!(Vector3f[])(assimpMesh.mNumVertices);
@@ -108,7 +177,7 @@ class AssimpAsset: Asset
     override bool loadThreadSafePart(string filename, InputStream istrm, ReadOnlyFileSystem fs, AssetManager mngr)
     {
         String ext = String(extension(filename));
-        writeln(ext);
+        //writeln(ext);
 
         ubyte[] buffer = New!(ubyte[])(istrm.size);
         istrm.fillArray(buffer);
@@ -125,12 +194,8 @@ class AssimpAsset: Asset
             return false;
         }
 
-        foreach(mi; 0..scene.mNumMeshes)
-        {
-            const(aiMesh)* assimpMesh = scene.mMeshes[mi];
-            auto mesh = model.createMesh(assimpMesh);
-            mesh.dataReady = true;
-        }
+        model.createMeshes(scene);
+        model.rootEntity = model.createEntity(scene, scene.mRootNode);
 
         Delete(buffer);
         ext.free();
