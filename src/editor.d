@@ -168,7 +168,7 @@ class Editor: Scene
         aTexDecalLeaves = addTextureAsset("data/decals/leaves1.png");
 
         assimpAsset = New!AssimpAsset(assetManager);
-        addAsset(assimpAsset, "data/suzanne.obj");
+        addAsset(assimpAsset, "data/cube.fbx");
     }
 
     override void onLoad(Time t, float progress)
@@ -258,6 +258,10 @@ class Editor: Scene
         {
             useEntity(asset.entity);
         }
+
+        auto eSuzanne = addEntity();
+        eSuzanne.drawable = assimpAsset.model;
+        eSuzanne.position.y = 14.0f;
 
         eGun = addEntity();
         eGun.position.y = 14.0f;
