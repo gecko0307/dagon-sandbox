@@ -179,7 +179,7 @@ class AssimpAsset: Asset
         String ext = String(extension(filename));
         //writeln(ext);
 
-        ubyte[] buffer = New!(ubyte[])(istrm.size);
+        ubyte[] buffer = New!(ubyte[])(cast(size_t)istrm.size);
         istrm.fillArray(buffer);
 
         const(aiScene*) scene = aiImportFileFromMemory(cast(char*)buffer.ptr, cast(uint)buffer.length,
