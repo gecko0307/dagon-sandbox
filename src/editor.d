@@ -34,8 +34,6 @@ import dagon;
 import dagon.ext.nuklear;
 import dagon.ext.ftfont;
 
-import assimp;
-
 class Editor: Scene
 {
     Game game;
@@ -116,8 +114,6 @@ class Editor: Scene
     float metallic = 0.0f;
     float energy = 0.0f;
 
-    AssimpAsset assimpAsset;
-
     this(Game game)
     {
         super(game);
@@ -166,9 +162,6 @@ class Editor: Scene
         aBush = addTextureAsset("data/bush/bush.png");
 
         aTexDecalLeaves = addTextureAsset("data/decals/leaves1.png");
-
-        assimpAsset = New!AssimpAsset(assetManager);
-        addAsset(assimpAsset, "data/cube.obj");
     }
 
     override void onLoad(Time t, float progress)
@@ -258,12 +251,7 @@ class Editor: Scene
         {
             useEntity(asset.entity);
         }
-
-        foreach(e; assimpAsset.model.entities)
-        {
-            useEntity(e);
-        }
-
+        
         eGun = addEntity();
         eGun.position.y = 14.0f;
         eGun.drawable = aMeshGun.mesh;

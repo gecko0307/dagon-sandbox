@@ -10,8 +10,7 @@
     "dependencies": {
         "dagon": "~master",
         "dagon:nuklear": "~master",
-        "dagon:ftfont": "~master",
-        "bindbc-assimp": "0.0.1-beta1"
+        "dagon:ftfont": "~master"
     },
 
     "buildRequirements":[
