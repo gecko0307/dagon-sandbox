@@ -65,7 +65,7 @@ class Editor: Scene
 
     TextureAsset aTexSmokeDiffuse;
 
-    //TextureAsset aEnvmap;
+    TextureAsset aEnvmap;
 
     ImageAsset aTexSkyFront;
     ImageAsset aTexSkyBack;
@@ -152,7 +152,7 @@ class Editor: Scene
 
         aTexSmokeDiffuse = addTextureAsset("data/particles/smoke-diffuse.png");
 
-        //aEnvmap = addTextureAsset("data/TropicalRuins_Env.hdr");
+        aEnvmap = addTextureAsset("data/TropicalRuins_Env.hdr");
 
         aTexSkyFront = addImageAsset("data/skybox/sky_front.png");
         aTexSkyBack = addImageAsset("data/skybox/sky_back.png");
@@ -279,9 +279,11 @@ class Editor: Scene
         auto mParticlesSmoke = addMaterial();
         mParticlesSmoke.diffuse = aTexSmokeDiffuse.texture;
         //mParticlesSmoke.normal = aTexParticleDustNormal.texture;
+        mParticlesSmoke.particleSphericalNormal = true;
         mParticlesSmoke.blending = Transparent;
         mParticlesSmoke.depthWrite = false;
         mParticlesSmoke.energy = 1.0f;
+        mParticlesSmoke.sun = sun;
 
         auto eParticleSystem = addEntity();
         auto particleSystem = New!ParticleSystem(eventManager, eParticleSystem);
@@ -297,7 +299,7 @@ class Editor: Scene
         emitterSmoke.maxInitialSpeed = 10.0f;
         emitterSmoke.minSize = 0.5f;
         emitterSmoke.maxSize = 2.0f;
-        eParticlesTest.position = Vector3f(2, 4, 0);
+        eParticlesTest.position = Vector3f(2, 6, 0);
         eParticlesTest.visible = true;
 
         auto eVortex = addEntity();
@@ -472,7 +474,6 @@ class Editor: Scene
             gui.inputScroll(x, y);
     }
 
-    /*
     override void onDropFile(string filename)
     {
         writeln(filename);
@@ -487,7 +488,6 @@ class Editor: Scene
         environment.ambientMap = envCubemap;
         eSky.material.diffuse = envCubemap;
     }
-    */
 
     void updateMenu()
     {
