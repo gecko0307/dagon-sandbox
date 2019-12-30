@@ -73,6 +73,8 @@ class Editor: Scene
     ImageAsset aTexSkyBottom;
 
     TextureAsset aTexDecalLeaves;
+    
+    TextureAsset aTexColorTable;
 
     OBJAsset aBushHi;
     OBJAsset aBushLow;
@@ -162,6 +164,8 @@ class Editor: Scene
         aBush = addTextureAsset("data/bush/bush.png");
 
         aTexDecalLeaves = addTextureAsset("data/decals/leaves1.png");
+        
+        aTexColorTable = addTextureAsset("data/filter1.png");
     }
 
     override void onLoad(Time t, float progress)
@@ -194,7 +198,9 @@ class Editor: Scene
         game.postProcessingRenderer.motionBlurEnabled = true;
         game.postProcessingRenderer.glowEnabled = true;
         game.postProcessingRenderer.fxaaEnabled = true;
+        game.postProcessingRenderer.lutEnabled = true;
         game.postProcessingRenderer.motionBlurFramerate = 30;
+        game.postProcessingRenderer.colorLookupTable = aTexColorTable.texture;
 
         sun = addLight(LightType.Sun);
         sun.position.y = 50.0f;
