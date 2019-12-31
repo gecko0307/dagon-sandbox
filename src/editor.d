@@ -199,6 +199,7 @@ class Editor: Scene
         game.postProcessingRenderer.glowEnabled = true;
         game.postProcessingRenderer.fxaaEnabled = true;
         game.postProcessingRenderer.lutEnabled = true;
+        game.postProcessingRenderer.lensDistortionEnabled = true;
         game.postProcessingRenderer.motionBlurFramerate = 30;
         game.postProcessingRenderer.colorLookupTable = aTexColorTable.texture;
 
