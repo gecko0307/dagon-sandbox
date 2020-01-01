@@ -276,6 +276,7 @@ class Editor: Scene
         auto mParticlesSmoke = addMaterial();
         mParticlesSmoke.diffuse = aTexSmokeDiffuse.texture;
         mParticlesSmoke.particleSphericalNormal = true;
+        mParticlesSmoke.shadeless = true;
         mParticlesSmoke.blending = Transparent;
         mParticlesSmoke.depthWrite = false;
         mParticlesSmoke.energy = 1.0f;
@@ -296,8 +297,8 @@ class Editor: Scene
         auto eParticlesFire = addEntity();
         auto emitterFire = New!Emitter(eParticlesFire, particleSystem, 50);
         emitterFire.material = mParticlesFire;
-        emitterFire.startColor = Color4f(0.5, 0.5, 0.5, 1);
-        emitterFire.endColor = Color4f(1.0, 1.0, 1.0, 0);
+        emitterFire.startColor = Color4f(1, 1, 1, 1);
+        emitterFire.endColor = Color4f(0.5, 0.5, 0.0, 0);
         emitterFire.initialDirectionRandomFactor = 0.2f;
         emitterFire.scaleStep = Vector2f(-1.0, 1.5);
         emitterFire.rotationStep = 0.0f;
@@ -313,7 +314,7 @@ class Editor: Scene
         auto eParticlesSmoke = addEntity();
         auto emitterSmoke = New!Emitter(eParticlesSmoke, particleSystem, 50);
         emitterSmoke.material = mParticlesSmoke;
-        emitterSmoke.startColor = Color4f(0.5, 0.5, 0.5, 1);
+        emitterSmoke.startColor = Color4f(1.0, 1.0, 1.0, 0.2);
         emitterSmoke.endColor = Color4f(1.0, 1.0, 1.0, 0);
         emitterSmoke.initialDirectionRandomFactor = 0.2f;
         emitterSmoke.scaleStep = Vector2f(1.0f, 1.0f); //Vector2f(-1.0, 1.5);
