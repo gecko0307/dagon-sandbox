@@ -61,6 +61,7 @@ class Editor: Scene
     TextureAsset aTexPavementAlbedo;
     TextureAsset aTexPavementNormal;
 
+    TextureAsset aTexFireDiffuse;
     TextureAsset aTexSmokeDiffuse;
 
     TextureAsset aEnvmap;
@@ -148,6 +149,7 @@ class Editor: Scene
         aTexGrassAlbedo = addTextureAsset("data/terrain/grass-albedo.png");
         aTexGrassNormal = addTextureAsset("data/terrain/grass-normal.png");
 
+        aTexFireDiffuse = addTextureAsset("data/particles/fire.png");
         aTexSmokeDiffuse = addTextureAsset("data/particles/smoke-diffuse.png");
 
         aEnvmap = addTextureAsset("data/TropicalRuins_Env.hdr");
@@ -273,29 +275,63 @@ class Editor: Scene
 
         auto mParticlesSmoke = addMaterial();
         mParticlesSmoke.diffuse = aTexSmokeDiffuse.texture;
-        //mParticlesSmoke.normal = aTexParticleDustNormal.texture;
         mParticlesSmoke.particleSphericalNormal = true;
         mParticlesSmoke.blending = Transparent;
         mParticlesSmoke.depthWrite = false;
         mParticlesSmoke.energy = 1.0f;
         mParticlesSmoke.sun = sun;
+        
+        auto mParticlesFire = addMaterial();
+        mParticlesFire.diffuse = aTexFireDiffuse.texture;
+        mParticlesFire.particleSphericalNormal = true;
+        mParticlesFire.shadeless = true;
+        mParticlesFire.blending = Additive;
+        mParticlesFire.depthWrite = false;
+        mParticlesFire.energy = 1.0f;
+        mParticlesFire.sun = sun;
 
         auto eParticleSystem = addEntity();
         auto particleSystem = New!ParticleSystem(eventManager, eParticleSystem);
-
-        auto eParticlesTest = addEntity();
-        auto emitterSmoke = New!Emitter(eParticlesTest, particleSystem, 50);
+        
+        auto eParticlesFire = addEntity();
+        auto emitterFire = New!Emitter(eParticlesFire, particleSystem, 50);
+        emitterFire.material = mParticlesFire;
+        emitterFire.startColor = Color4f(0.5, 0.5, 0.5, 1);
+        emitterFire.endColor = Color4f(1.0, 1.0, 1.0, 0);
+        emitterFire.initialDirectionRandomFactor = 0.2f;
+        emitterFire.scaleStep = Vector2f(-1.0, 1.5);
+        emitterFire.rotationStep = 0.0f;
+        emitterFire.minInitialSpeed = 5.0f;
+        emitterFire.maxInitialSpeed = 10.0f;
+        emitterFire.minSize = 0.5f;
+        emitterFire.maxSize = 2.0f;
+        emitterFire.minLifetime = 0.2f;
+        emitterFire.maxLifetime = 1.0f;
+        eParticlesFire.position = Vector3f(4, 6, -4);
+        eParticlesFire.visible = true;
+        
+        auto eParticlesSmoke = addEntity();
+        auto emitterSmoke = New!Emitter(eParticlesSmoke, particleSystem, 50);
         emitterSmoke.material = mParticlesSmoke;
         emitterSmoke.startColor = Color4f(0.5, 0.5, 0.5, 1);
         emitterSmoke.endColor = Color4f(1.0, 1.0, 1.0, 0);
         emitterSmoke.initialDirectionRandomFactor = 0.2f;
-        emitterSmoke.scaleStep = Vector2f(1, 1);
+        emitterSmoke.scaleStep = Vector2f(1.0f, 1.0f); //Vector2f(-1.0, 1.5);
+        emitterSmoke.rotationStep = 0.0f;
         emitterSmoke.minInitialSpeed = 5.0f;
         emitterSmoke.maxInitialSpeed = 10.0f;
         emitterSmoke.minSize = 0.5f;
         emitterSmoke.maxSize = 2.0f;
-        eParticlesTest.position = Vector3f(2, 6, 0);
-        eParticlesTest.visible = true;
+        eParticlesSmoke.position = Vector3f(4, 7, -4);
+        eParticlesSmoke.visible = true;
+        
+        auto light = addLight(LightType.AreaSphere);
+        light.castShadow = false;
+        light.position = Vector3f(4, 8, -4);
+        light.color = Color4f(1.0f, 0.5f, 0.0f, 1.0f);
+        light.energy = 20.0f;
+        light.radius = 0.0f;
+        light.volumeRadius = 10.0f;
 
         auto eVortex = addEntity();
         eVortex.position = Vector3f(2, 4, 0);
