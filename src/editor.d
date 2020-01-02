@@ -34,6 +34,8 @@ import dagon;
 import dagon.ext.nuklear;
 import dagon.ext.ftfont;
 
+version = Winter;
+
 class Editor: Scene
 {
     Game game;
@@ -80,6 +82,9 @@ class Editor: Scene
     OBJAsset aBushHi;
     OBJAsset aBushLow;
     TextureAsset aBush;
+    
+    OBJAsset aSpruce;
+    TextureAsset aSpruceAlbedo;
 
     Camera camera;
     FreeviewComponent freeview;
@@ -103,9 +108,9 @@ class Editor: Scene
     bool envColorPicker = false;
     Color4f envColor = Color4f(0.8f, 0.8f, 1.0f, 1.0f);
     bool sunColorPicker = false;
-    Color4f sunColor = Color4f(1.0f, 0.7f, 0.5f, 1.0f);
+    Color4f sunColor = Color4f(1.0f, 0.66f, 0.33f, 1.0f); //Color4f(1.0f, 0.7f, 0.5f, 1.0f);
 
-    float sunPitch = -25.0f;
+    float sunPitch = -20.0f;
     float sunTurn = 135.0f;
 
     int useTextures = 1;
@@ -136,18 +141,32 @@ class Editor: Scene
 
         aScene = addPackageAsset("data/village/village.asset");
 
-        aHeightmap = addImageAsset("data/terrain/heightmap.png");
+        version(Winter)
+        {
+            aHeightmap = addImageAsset("data/terrain/heightmap-snow.png");
+            aSplatmapGrass = addTextureAsset("data/terrain/splatmap-snow.png");
+            aTexPavementAlbedo = addTextureAsset("data/terrain/pavement-snow-albedo.png");
+            aTexGrassAlbedo = addTextureAsset("data/terrain/grass-snow-albedo.png");
+            aTexGrassNormal = addTextureAsset("data/terrain/grass-snow-normal.png");
+            aBush = addTextureAsset("data/bush/bush-snow.png");
+            aSpruceAlbedo = addTextureAsset("data/spruce/spruce-snow-diffuse.png");
+        }
+        else 
+        {
+            aHeightmap = addImageAsset("data/terrain/heightmap.png");
+            aSplatmapGrass = addTextureAsset("data/terrain/splatmap-grass.png");
+            aTexPavementAlbedo = addTextureAsset("data/terrain/pavement-albedo.png");
+            aTexGrassAlbedo = addTextureAsset("data/terrain/grass-albedo.png");
+            aTexGrassNormal = addTextureAsset("data/terrain/grass-normal.png");
+            aBush = addTextureAsset("data/bush/bush.png");
+            aSpruceAlbedo = addTextureAsset("data/spruce/spruce-diffuse.png");
+        }
         aSplatmapPavement = addTextureAsset("data/terrain/splatmap-pavement.png");
-        aSplatmapGrass = addTextureAsset("data/terrain/splatmap-grass.png");
 
         aTexDesertAlbedo = addTextureAsset("data/terrain/desert-albedo.png");
         aTexDesertNormal = addTextureAsset("data/terrain/desert-normal.png");
 
-        aTexPavementAlbedo = addTextureAsset("data/terrain/pavement-albedo.png");
         aTexPavementNormal = addTextureAsset("data/terrain/pavement-normal.png");
-
-        aTexGrassAlbedo = addTextureAsset("data/terrain/grass-albedo.png");
-        aTexGrassNormal = addTextureAsset("data/terrain/grass-normal.png");
 
         aTexFireDiffuse = addTextureAsset("data/particles/fire.png");
         aTexSmokeDiffuse = addTextureAsset("data/particles/smoke-diffuse.png");
@@ -163,7 +182,8 @@ class Editor: Scene
 
         aBushHi = addOBJAsset("data/bush/bush-hi.obj");
         aBushLow = addOBJAsset("data/bush/bush-low.obj");
-        aBush = addTextureAsset("data/bush/bush.png");
+        
+        aSpruce = addOBJAsset("data/spruce/spruce.obj");
 
         aTexDecalLeaves = addTextureAsset("data/decals/leaves1.png");
         
@@ -199,6 +219,9 @@ class Editor: Scene
         game.deferredRenderer.ssaoPower = 6.0;
         game.postProcessingRenderer.motionBlurEnabled = true;
         game.postProcessingRenderer.glowEnabled = true;
+        game.postProcessingRenderer.glowThreshold = 0.3f;
+        game.postProcessingRenderer.glowIntensity = 0.3f;
+        game.postProcessingRenderer.glowRadius = 10;
         game.postProcessingRenderer.fxaaEnabled = true;
         game.postProcessingRenderer.lutEnabled = true;
         game.postProcessingRenderer.lensDistortionEnabled = true;
@@ -208,13 +231,14 @@ class Editor: Scene
         sun = addLight(LightType.Sun);
         sun.position.y = 50.0f;
         sun.shadowEnabled = true;
-        sun.energy = 10.0f;
+        version(Winter)
+            sun.energy = 6.0f;
+        else
+            sun.energy = 10.0f;
         sun.scatteringEnabled = true;
         sun.color = sunColor;
 
         lightSphere = New!ShapeSphere(1.0f, 24, 16, false, assetManager);
-        //addLightBall(Vector3f(0, 8, -8), Color4f(1.0, 0.5, 0.0, 1.0), 10.0f, 1.0f, 20.0f);
-        //addLightBall(Vector3f(0, 8, 8),  Color4f(0.0, 0.5, 1.0, 1.0), 10.0f, 1.0f, 20.0f);
 
         eSky = addEntity();
         eSky.layer = EntityLayer.Background;
@@ -239,15 +263,17 @@ class Editor: Scene
 
         eTerrain.material.diffuse2 = aTexGrassAlbedo.texture;
         eTerrain.material.splatmap2 = aSplatmapGrass.texture;
-        eTerrain.material.textureScale2 = Vector2f(100, 100);
+        eTerrain.material.textureScale2 = Vector2f(50, 50);
         eTerrain.material.normal2 = aTexGrassNormal.texture;
-        eTerrain.material.roughness2 = 1.0f;
+        version(Winter) eTerrain.material.roughness2 = 0.6f;
+        else eTerrain.material.roughness2 = 1.0f;
 
         eTerrain.material.diffuse3 = aTexPavementAlbedo.texture;
         eTerrain.material.splatmap3 = aSplatmapPavement.texture;
-        eTerrain.material.textureScale3 = Vector2f(100, 100);
+        eTerrain.material.textureScale3 = Vector2f(50, 50);
         eTerrain.material.normal3 = aTexPavementNormal.texture;
-        eTerrain.material.roughness3 = 0.5f;
+        version(Winter) eTerrain.material.roughness3 = 0.5f;
+        else eTerrain.material.roughness3 = 0.7f;
 
         auto heightmap = New!ImageHeightmap(aHeightmap.image, 30.0f, assetManager);
         auto terrain = New!Terrain(512, 64, heightmap, assetManager);
@@ -259,6 +285,7 @@ class Editor: Scene
         foreach(name, asset; aScene.entities)
         {
             useEntity(asset.entity);
+            //asset.entity.dynamic = false;
         }
         
         eGun = addEntity();
@@ -328,10 +355,10 @@ class Editor: Scene
         
         auto light = addLight(LightType.AreaSphere);
         light.castShadow = false;
-        light.position = Vector3f(4, 8, -4);
+        light.position = Vector3f(4, 6.5f, -4);
         light.color = Color4f(1.0f, 0.5f, 0.0f, 1.0f);
         light.energy = 20.0f;
-        light.radius = 0.0f;
+        light.radius = 0.4f;
         light.volumeRadius = 10.0f;
 
         auto eVortex = addEntity();
@@ -355,15 +382,37 @@ class Editor: Scene
         lod.addLevel(aBushLow.mesh, mBushLow, 50.0f, 500.0f, 0.0f);
         Vector3f center = Vector3f(0.0f, 0.0f, 0.0f);
 
-        foreach(i; 0..100)
+        foreach(i; 0..50)
         {
-            auto eLod = addEntity();
-            eLod.drawable = lod;
+            auto eBush = addEntity();
+            eBush.dynamic = false;
+            eBush.drawable = lod;
             float rnd = uniform(0.4f, 1.0f);
             Vector2f pos = randomUnitVector2!float() * 50.0f;
-            eLod.position = lerp(center, Vector3f(pos.x, 0.0f, pos.y), rnd);
-            eLod.position.y = terrain.getHeight(eTerrain, eLod.position);
-            eLod.scale(3);
+            eBush.position = lerp(center, Vector3f(pos.x, 0.0f, pos.y), rnd);
+            eBush.position.y = terrain.getHeight(eTerrain, eBush.position);
+            eBush.scale(uniform(1.5f, 3.0f));
+            eBush.turn(uniform(0.0f, 360.0f));
+        }
+        
+        auto mSpruce = addMaterial();
+        mSpruce.diffuse = aSpruceAlbedo.texture;
+        mSpruce.culling = false;
+        mSpruce.roughness = 1;
+        mSpruce.specularity = 0;
+        
+        foreach(i; 0..50)
+        {
+            auto eTree = addEntity();
+            eTree.dynamic = false;
+            eTree.drawable = aSpruce.mesh;
+            eTree.material = mSpruce;
+            float rnd = uniform(0.4f, 1.0f);
+            Vector2f pos = randomUnitVector2!float() * 50.0f;
+            eTree.position = lerp(center, Vector3f(pos.x, 0.0f, pos.y), rnd);
+            eTree.position.y = terrain.getHeight(eTerrain, eTree.position);
+            eTree.scale(uniform(3.0f, 15.0f));
+            eTree.turn(uniform(0.0f, 360.0f));
         }
 
         auto leavesDecalMaterial = addMaterial();
