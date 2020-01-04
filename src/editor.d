@@ -210,9 +210,9 @@ class Editor: Scene
 
         camera = addCamera();
         freeview = New!FreeviewComponent(eventManager, camera);
-        freeview.zoom(-20);
-        freeview.pitch(-30.0f);
-        freeview.turn(10.0f);
+        freeview.setZoom(15);
+        freeview.setRotation(11.0f, -44.0f, 0.0f);
+        freeview.translateTarget(Vector3f(1.2f, -8.7f, 4.3f));
         game.renderer.activeCamera = camera;
 
         game.deferredRenderer.ssaoEnabled = true;
@@ -415,21 +415,27 @@ class Editor: Scene
             eTree.turn(uniform(0.0f, 360.0f));
         }
 
-        auto leavesDecalMaterial = addMaterial();
-        leavesDecalMaterial.diffuse = aTexDecalLeaves.texture;
-        leavesDecalMaterial.blending = Transparent;
-        leavesDecalMaterial.depthWrite = false;
-        leavesDecalMaterial.culling = false;
-        leavesDecalMaterial.outputColor = true;
-        leavesDecalMaterial.outputNormal = false;
-        leavesDecalMaterial.outputPBR = false;
+        version(Winter)
+        {
+        }
+        else
+        {
+            auto leavesDecalMaterial = addMaterial();
+            leavesDecalMaterial.diffuse = aTexDecalLeaves.texture;
+            leavesDecalMaterial.blending = Transparent;
+            leavesDecalMaterial.depthWrite = false;
+            leavesDecalMaterial.culling = false;
+            leavesDecalMaterial.outputColor = true;
+            leavesDecalMaterial.outputNormal = false;
+            leavesDecalMaterial.outputPBR = false;
 
-        auto decal = addDecal();
-        decal.position = Vector3f(20, 0, 0);
-        decal.scale(2.0f);
-        decal.position.y = terrain.getHeight(eTerrain, decal.position);
-        decal.material = leavesDecalMaterial;
-
+            auto decal = addDecal();
+            decal.position = Vector3f(20, 0, 0);
+            decal.scale(2.0f);
+            decal.position.y = terrain.getHeight(eTerrain, decal.position);
+            decal.material = leavesDecalMaterial;
+        }
+        
         gui = New!NuklearGUI(eventManager, assetManager);
         gui.addFont(aFont, 18, gui.localeGlyphRanges);
         auto eNuklear = addEntityHUD();
