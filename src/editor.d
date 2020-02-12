@@ -236,6 +236,8 @@ class Editor: Scene
         else
             sun.energy = 10.0f;
         sun.scatteringEnabled = true;
+        sun.scattering = 0.35f;
+        sun.mediumDensity = 0.15f;
         sun.color = sunColor;
 
         lightSphere = New!ShapeSphere(1.0f, 24, 16, false, assetManager);
@@ -370,6 +372,7 @@ class Editor: Scene
         mBushHi.culling = false;
         mBushHi.roughness = 1;
         mBushHi.specularity = 0;
+        mBushHi.sun = sun;
         auto mBushLow = addMaterial();
         mBushLow.diffuse = aBush.texture;
         mBushLow.culling = false;
@@ -387,6 +390,8 @@ class Editor: Scene
             auto eBush = addEntity();
             eBush.dynamic = false;
             eBush.drawable = lod;
+            eBush.material = mBushHi;
+            //eBush.opacity = 0.5;
             float rnd = uniform(0.4f, 1.0f);
             Vector2f pos = randomUnitVector2!float() * 50.0f;
             eBush.position = lerp(center, Vector3f(pos.x, 0.0f, pos.y), rnd);
@@ -528,6 +533,10 @@ class Editor: Scene
             gui.inputKeyDown(NK_KEY_PASTE);
         else if (key == KEY_A && eventManager.keyPressed[KEY_LCTRL])
             gui.inputKeyDown(NK_KEY_TEXT_SELECT_ALL);
+        else if (key == KEY_R)
+        {
+            eGun.rotateFromTo(Vector3f(0, 0, 0), Vector3f(180, 90, 0), 1.0f, Easing.QuadInOut);
+        }
     }
 
     override void onKeyUp(int key)
