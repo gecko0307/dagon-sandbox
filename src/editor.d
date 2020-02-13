@@ -109,6 +109,8 @@ class Editor: Scene
     Color4f envColor = Color4f(0.8f, 0.8f, 1.0f, 1.0f);
     bool sunColorPicker = false;
     Color4f sunColor = Color4f(1.0f, 0.66f, 0.33f, 1.0f); //Color4f(1.0f, 0.7f, 0.5f, 1.0f);
+    
+    bool fogColorPicker = false;
 
     float sunPitch = -20.0f;
     float sunTurn = 135.0f;
@@ -489,7 +491,7 @@ class Editor: Scene
 
         environment.backgroundColor = envColor;
         environment.ambientColor = envColor * 0.25f;
-        environment.fogColor = envColor;
+        //environment.fogColor = envColor;
 
         sun.rotation =
             rotationQuaternion!float(Axis.y, degtorad(sunTurn)) *
@@ -736,6 +738,35 @@ class Editor: Scene
             gui.layoutRowDynamic(25, 2);
             gui.label("Medium density:", NK_TEXT_LEFT);
             gui.slider(0.0f, &sun.mediumDensity, 1.0f, 0.01f);
+            
+            gui.layoutRowDynamic(25, 2);
+            gui.label("Fog start:", NK_TEXT_LEFT);
+            gui.slider(0.0f, &environment.fogStart, 100.0f, 1.0f);
+            gui.layoutRowDynamic(25, 2);
+            gui.label("Fog end:", NK_TEXT_LEFT);
+            gui.slider(0.0f, &environment.fogEnd, 1000.0f, 1.0f);
+            
+            gui.layoutRowDynamic(25, 2);
+            gui.label("Fog color:", NK_TEXT_LEFT);
+            Color4f fogColor = environment.fogColor;
+            if (gui.buttonColor(fogColor))
+                fogColorPicker = !fogColorPicker;
+            if (fogColorPicker)
+            {
+                NKRect s = NKRect(300, 100, 300, 350);
+                if (gui.popupBegin(NK_POPUP_STATIC, "Color", NK_WINDOW_CLOSABLE, s))
+                {
+                    gui.layoutRowDynamic(180, 1);
+                    fogColor = gui.colorPicker(fogColor, NK_RGB);
+                    gui.layoutRowDynamic(25, 1);
+                    fogColor.r = gui.property("#R:", 0.0f, fogColor.r, 1.0f, 0.01f, 0.005f);
+                    fogColor.g = gui.property("#G:", 0.0f, fogColor.g, 1.0f, 0.01f, 0.005f);
+                    fogColor.b = gui.property("#B:", 0.0f, fogColor.b, 1.0f, 0.01f, 0.005f);
+                    gui.popupEnd();
+                }
+                else fogColorPicker = false;
+            }
+            environment.fogColor = fogColor;
 
             gui.treePop();
         }
