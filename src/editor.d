@@ -226,7 +226,7 @@ class Editor: Scene
         game.postProcessingRenderer.fxaaEnabled = true;
         game.postProcessingRenderer.lutEnabled = true;
         game.postProcessingRenderer.lensDistortionEnabled = true;
-        game.postProcessingRenderer.motionBlurFramerate = 30;
+        game.postProcessingRenderer.motionBlurFramerate = 24;
         game.postProcessingRenderer.colorLookupTable = aTexColorTable.texture;
 
         sun = addLight(LightType.Sun);
@@ -253,6 +253,16 @@ class Editor: Scene
         eSky.material.depthWrite = false;
         eSky.material.culling = false;
         eSky.material.diffuse = envCubemap;
+        
+        auto eWater = addEntity();
+        eWater.dynamic = false;
+        eWater.castShadow = false;
+        eWater.position = Vector3f(0, 4, 0);
+        eWater.material = addMaterial();
+        eWater.material.blending = Transparent;
+        eWater.material.shader = New!WaterShader(game.deferredRenderer.gbuffer, assetManager, assetManager);
+        eWater.material.sun = sun;
+        eWater.drawable = New!ShapePlane(128, 128, 10, assetManager);
 
         eTerrain = addEntity();
         eTerrain.dynamic = false;
