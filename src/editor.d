@@ -87,7 +87,7 @@ class Editor: Scene
     TextureAsset aSpruceAlbedo;
 
     Camera camera;
-    FreeviewComponent freeview;
+    FirstPersonViewComponent fpview;
 
     Light sun;
     Entity eSky;
@@ -211,10 +211,9 @@ class Editor: Scene
         environment.ambientMap = envCubemap;
 
         camera = addCamera();
-        freeview = New!FreeviewComponent(eventManager, camera);
-        freeview.setZoom(15);
-        freeview.setRotation(11.0f, -44.0f, 0.0f);
-        freeview.translateTarget(Vector3f(1.2f, -8.7f, 4.3f));
+        fpview = New!FirstPersonViewComponent(eventManager, camera);
+        fpview.active = false;
+        camera.position.y = 10.0f;
         game.renderer.activeCamera = camera;
 
         game.deferredRenderer.ssaoEnabled = true;
@@ -488,6 +487,14 @@ class Editor: Scene
         infoText.setText(s);
 
         updateUserInterface(t);
+        
+        if (fpview.active && eventManager.mouseButtonPressed[MB_LEFT])
+        {
+            if (eventManager.keyPressed[KEY_W]) camera.move(-0.1f);
+            if (eventManager.keyPressed[KEY_S]) camera.move(0.1f);
+            if (eventManager.keyPressed[KEY_A]) camera.strafe(-0.1f);
+            if (eventManager.keyPressed[KEY_D]) camera.strafe(0.1f);
+        }
 
         environment.backgroundColor = envColor;
         environment.ambientColor = envColor * 0.25f;
@@ -550,14 +557,15 @@ class Editor: Scene
     override void onMouseButtonDown(int button)
     {
         gui.inputButtonDown(button);
-        freeview.active = !gui.itemIsAnyActive();
-        freeview.prevMouseX = eventManager.mouseX;
-        freeview.prevMouseY = eventManager.mouseY;
+        fpview.active = !gui.itemIsAnyActive();
+        fpview.prevMouseX = eventManager.mouseX;
+        fpview.prevMouseY = eventManager.mouseY;
     }
 
     override void onMouseButtonUp(int button)
     {
         gui.inputButtonUp(button);
+        fpview.active = false;
     }
 
     override void onTextInput(dchar unicode)
@@ -567,8 +575,7 @@ class Editor: Scene
 
     override void onMouseWheel(int x, int y)
     {
-        freeview.active = !gui.itemIsAnyActive();
-        if (!freeview.active)
+        if (!fpview.active)
             gui.inputScroll(x, y);
     }
 
