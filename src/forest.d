@@ -254,17 +254,23 @@ class ForestScene: Scene
         eSky.material.culling = false;
         eSky.material.diffuse = envCubemap;
         
-        auto eWater = addEntity();
-        eWater.dynamic = false;
-        eWater.castShadow = false;
-        eWater.position = Vector3f(0, 4, 0);
-        auto waterShader = New!WaterShader(game.deferredRenderer.gbuffer, assetManager, assetManager);
-        waterShader.waterColor = Color4f(0.05f, 0.2f, 0.0f, 1.0f);
-        eWater.material = addMaterial();
-        eWater.material.blending = Transparent;
-        eWater.material.shader = waterShader;
-        eWater.material.sun = sun;
-        eWater.drawable = New!ShapePlane(128, 128, 10, assetManager);
+        version(Winter)
+        {
+        }
+        else
+        {
+            auto eWater = addEntity();
+            eWater.dynamic = false;
+            eWater.castShadow = false;
+            eWater.position = Vector3f(0, 4, 0);
+            auto waterShader = New!WaterShader(game.deferredRenderer.gbuffer, assetManager, assetManager);
+            waterShader.waterColor = Color4f(0.05f, 0.2f, 0.0f, 1.0f);
+            eWater.material = addMaterial();
+            eWater.material.blending = Transparent;
+            eWater.material.shader = waterShader;
+            eWater.material.sun = sun;
+            eWater.drawable = New!ShapePlane(128, 128, 10, assetManager);
+        }
 
         eTerrain = addEntity();
         eTerrain.dynamic = false;
