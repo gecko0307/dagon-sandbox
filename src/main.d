@@ -2,7 +2,7 @@ module main;
 
 import std.stdio;
 import dagon;
-import editor;
+import forest;
 
 class MyGame: Game
 {
@@ -10,7 +10,7 @@ class MyGame: Game
     {
         super(w, h, fullscreen, title, args);
 
-        currentScene = New!Editor(this);
+        currentScene = New!ForestScene(this);
         deferredRenderer.setViewport(0, 0, eventManager.windowWidth - 300, eventManager.windowHeight - 40);
         postProcessingRenderer.setViewport(0, 0, eventManager.windowWidth - 300, eventManager.windowHeight - 40);
         presentRenderer.setViewport(300, 0, eventManager.windowWidth - 300, eventManager.windowHeight - 40);

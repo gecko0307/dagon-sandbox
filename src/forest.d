@@ -25,7 +25,7 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-module editor;
+module forest;
 
 import std.stdio;
 import std.random;
@@ -36,7 +36,7 @@ import dagon.ext.ftfont;
 
 //version = Winter;
 
-class Editor: Scene
+class ForestScene: Scene
 {
     Game game;
     LoadingScreen loadingScreen;
@@ -258,9 +258,11 @@ class Editor: Scene
         eWater.dynamic = false;
         eWater.castShadow = false;
         eWater.position = Vector3f(0, 4, 0);
+        auto waterShader = New!WaterShader(game.deferredRenderer.gbuffer, assetManager, assetManager);
+        waterShader.waterColor = Color4f(0.05f, 0.2f, 0.0f, 1.0f);
         eWater.material = addMaterial();
         eWater.material.blending = Transparent;
-        eWater.material.shader = New!WaterShader(game.deferredRenderer.gbuffer, assetManager, assetManager);
+        eWater.material.shader = waterShader;
         eWater.material.sun = sun;
         eWater.drawable = New!ShapePlane(128, 128, 10, assetManager);
 
