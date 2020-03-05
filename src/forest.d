@@ -105,6 +105,7 @@ class ForestScene: Scene
     TextLine infoText;
 
     NuklearGUI gui;
+    Entity eNuklear;
     bool envColorPicker = false;
     Color4f envColor = Color4f(0.8f, 0.8f, 1.0f, 1.0f);
     bool sunColorPicker = false;
@@ -226,7 +227,7 @@ class ForestScene: Scene
         game.postProcessingRenderer.fxaaEnabled = true;
         game.postProcessingRenderer.lutEnabled = true;
         game.postProcessingRenderer.lensDistortionEnabled = true;
-        game.postProcessingRenderer.motionBlurFramerate = 24;
+        game.postProcessingRenderer.motionBlurFramerate = 45;
         game.postProcessingRenderer.colorLookupTable = aTexColorTable.texture;
 
         sun = addLight(LightType.Sun);
@@ -462,12 +463,13 @@ class ForestScene: Scene
         
         gui = New!NuklearGUI(eventManager, assetManager);
         gui.addFont(aFont, 18, gui.localeGlyphRanges);
-        auto eNuklear = addEntityHUD();
+        eNuklear = addEntityHUD();
         eNuklear.drawable = gui;
+        eNuklear.visible = false;
 
         text = addEntityHUD();
         infoText = New!TextLine(aFont.font, "Hello, World!", assetManager);
-        infoText.color = Color4f(0.6f, 0.6f, 0.6f, 1.0f);
+        infoText.color = Color4f(1, 1, 1, 0.7f);
         text.drawable = infoText;
         text.position.x = 10;
         text.position.y = eventManager.windowHeight - 10;
@@ -500,18 +502,19 @@ class ForestScene: Scene
     {
         text.position.y = eventManager.windowHeight - 10;
 
-        uint n = sprintf(textBuffer.ptr, "FPS: %u", eventManager.fps);
+        uint n = sprintf(textBuffer.ptr, "FPS: %u", application.cadencer.fps);
         string s = cast(string)textBuffer[0..n];
         infoText.setText(s);
 
-        updateUserInterface(t);
+        if (eNuklear.visible)
+            updateUserInterface(t);
         
         if (fpview.active && eventManager.mouseButtonPressed[MB_LEFT])
         {
-            if (eventManager.keyPressed[KEY_W]) camera.move(-0.1f);
-            if (eventManager.keyPressed[KEY_S]) camera.move(0.1f);
-            if (eventManager.keyPressed[KEY_A]) camera.strafe(-0.1f);
-            if (eventManager.keyPressed[KEY_D]) camera.strafe(0.1f);
+            if (eventManager.keyPressed[KEY_W]) camera.move(-0.25f);
+            if (eventManager.keyPressed[KEY_S]) camera.move(0.25f);
+            if (eventManager.keyPressed[KEY_A]) camera.strafe(-0.25f);
+            if (eventManager.keyPressed[KEY_D]) camera.strafe(0.25f);
         }
 
         environment.backgroundColor = envColor;
@@ -550,7 +553,30 @@ class ForestScene: Scene
     {
         if (key == KEY_ESCAPE)
             application.exit();
-        else if (key == KEY_BACKSPACE)
+        else
+        {
+            if (key == KEY_R)
+            {
+                eGun.rotateFromTo(Vector3f(0, 0, 0), Vector3f(180, 90, 0), 1.0f, Easing.QuadInOut);
+            }
+            else if (key == KEY_RETURN)
+            {
+                if (eNuklear.visible)
+                    eNuklear.visible = false;
+                else
+                    eNuklear.visible = true;
+            }
+            
+            if (eNuklear.visible)
+            {
+                guiOnKeyDown(key);
+            }
+        }
+    }
+    
+    void guiOnKeyDown(int key)
+    {
+        if (key == KEY_BACKSPACE)
             gui.inputKeyDown(NK_KEY_BACKSPACE);
         else if (key == KEY_DELETE)
             gui.inputKeyDown(NK_KEY_DEL);
@@ -560,10 +586,6 @@ class ForestScene: Scene
             gui.inputKeyDown(NK_KEY_PASTE);
         else if (key == KEY_A && eventManager.keyPressed[KEY_LCTRL])
             gui.inputKeyDown(NK_KEY_TEXT_SELECT_ALL);
-        else if (key == KEY_R)
-        {
-            eGun.rotateFromTo(Vector3f(0, 0, 0), Vector3f(180, 90, 0), 1.0f, Easing.QuadInOut);
-        }
     }
 
     override void onKeyUp(int key)
@@ -574,7 +596,8 @@ class ForestScene: Scene
 
     override void onMouseButtonDown(int button)
     {
-        gui.inputButtonDown(button);
+        if (eNuklear.visible)
+            gui.inputButtonDown(button);
         fpview.active = !gui.itemIsAnyActive();
         fpview.prevMouseX = eventManager.mouseX;
         fpview.prevMouseY = eventManager.mouseY;
@@ -582,18 +605,20 @@ class ForestScene: Scene
 
     override void onMouseButtonUp(int button)
     {
-        gui.inputButtonUp(button);
+        if (eNuklear.visible)
+            gui.inputButtonUp(button);
         fpview.active = false;
     }
 
     override void onTextInput(dchar unicode)
     {
-        gui.inputUnicode(unicode);
+        if (eNuklear.visible)
+            gui.inputUnicode(unicode);
     }
 
     override void onMouseWheel(int x, int y)
     {
-        if (!fpview.active)
+        if (eNuklear.visible && !fpview.active)
             gui.inputScroll(x, y);
     }
 
@@ -844,25 +869,6 @@ class ForestScene: Scene
             updateRenderTab();
             updateEnvironmentTab();
             updateMaterialTab();
-
-            /*
-            if (gui.treePush(NK_TREE_NODE, "Options", NK_MINIMIZED))
-            {
-                gui.layoutRowDynamic(30, 2);
-                if (gui.optionLabel("on", option == true)) option = true;
-                if (gui.optionLabel("off", option == false)) option = false;
-                gui.treePop();
-            }
-
-            if (gui.treePush(NK_TREE_NODE, "Input", NK_MINIMIZED))
-            {
-                static int len = 4;
-                static char[256] buffer = "test";
-                gui.layoutRowDynamic(35, 1);
-                gui.editString(NK_EDIT_FIELD, buffer.ptr, &len, 255, null);
-                gui.treePop();
-            }
-            */
         }
         gui.end();
     }
