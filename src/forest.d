@@ -217,18 +217,18 @@ class ForestScene: Scene
         camera.position.y = 10.0f;
         game.renderer.activeCamera = camera;
 
-        game.deferredRenderer.ssaoEnabled = true;
-        game.deferredRenderer.ssaoPower = 6.0;
-        game.postProcessingRenderer.motionBlurEnabled = true;
-        game.postProcessingRenderer.glowEnabled = true;
-        game.postProcessingRenderer.glowThreshold = 0.3f;
-        game.postProcessingRenderer.glowIntensity = 0.3f;
-        game.postProcessingRenderer.glowRadius = 10;
-        game.postProcessingRenderer.fxaaEnabled = true;
-        game.postProcessingRenderer.lutEnabled = true;
-        game.postProcessingRenderer.lensDistortionEnabled = true;
-        game.postProcessingRenderer.motionBlurFramerate = 45;
-        game.postProcessingRenderer.colorLookupTable = aTexColorTable.texture;
+        game.deferred.ssaoEnabled = true;
+        game.deferred.ssaoPower = 6.0;
+        game.postProc.motionBlurEnabled = true;
+        game.postProc.glowEnabled = true;
+        game.postProc.glowThreshold = 0.3f;
+        game.postProc.glowIntensity = 0.3f;
+        game.postProc.glowRadius = 10;
+        game.postProc.fxaaEnabled = true;
+        game.postProc.lutEnabled = true;
+        game.postProc.lensDistortionEnabled = true;
+        game.postProc.motionBlurFramerate = 45;
+        game.postProc.colorLookupTable = aTexColorTable.texture;
 
         sun = addLight(LightType.Sun);
         sun.position.y = 50.0f;
@@ -682,36 +682,36 @@ class ForestScene: Scene
         {
             gui.layoutRowDynamic(30, 2);
             gui.label("Output:", NK_TEXT_LEFT);
-            auto oldOutputMode = game.deferredRenderer.outputMode;
-            game.deferredRenderer.outputMode =
+            auto oldOutputMode = game.deferred.outputMode;
+            game.deferred.outputMode =
                 cast(DebugOutputMode)gui.comboString(
                     "Radiance\0Albedo\0Normal\0Position\0Roughness\0Metallic\0Occlusion",
-                    game.deferredRenderer.outputMode, 7, 25, NKVec2(120, 250));
-            if (game.deferredRenderer.outputMode != oldOutputMode)
-                writeln("Output mode: ", game.deferredRenderer.outputMode);
+                    game.deferred.outputMode, 7, 25, NKVec2(120, 250));
+            if (game.deferred.outputMode != oldOutputMode)
+                writeln("Output mode: ", game.deferred.outputMode);
 
             gui.layoutRowDynamic(25, 1);
-            game.deferredRenderer.ssaoSamples = gui.property("AO samples:", 1, game.deferredRenderer.ssaoSamples, 25, 1, 1);
-            game.deferredRenderer.ssaoRadius = gui.property("AO radius:", 0.05f, game.deferredRenderer.ssaoRadius, 1.0f, 0.01f, 0.005f);
-            game.deferredRenderer.ssaoPower = gui.property("AO power:", 0.0f, game.deferredRenderer.ssaoPower, 10.0f, 0.01f, 0.01f);
-            game.deferredRenderer.ssaoDenoise = gui.property("AO denoise:", 0.0f, game.deferredRenderer.ssaoDenoise, 1.0f, 0.01f, 0.01f);
+            game.deferred.ssaoSamples = gui.property("AO samples:", 1, game.deferred.ssaoSamples, 25, 1, 1);
+            game.deferred.ssaoRadius = gui.property("AO radius:", 0.05f, game.deferred.ssaoRadius, 1.0f, 0.01f, 0.005f);
+            game.deferred.ssaoPower = gui.property("AO power:", 0.0f, game.deferred.ssaoPower, 10.0f, 0.01f, 0.01f);
+            game.deferred.ssaoDenoise = gui.property("AO denoise:", 0.0f, game.deferred.ssaoDenoise, 1.0f, 0.01f, 0.01f);
 
             gui.layoutRowDynamic(25, 1);
-            game.postProcessingRenderer.glowThreshold = gui.property("Glow threshold:", 0.0f, game.postProcessingRenderer.glowThreshold, 1.0f, 0.01f, 0.005f);
-            game.postProcessingRenderer.glowIntensity = gui.property("Glow intensity:", 0.0f, game.postProcessingRenderer.glowIntensity, 1.0f, 0.01f, 0.005f);
+            game.postProc.glowThreshold = gui.property("Glow threshold:", 0.0f, game.postProc.glowThreshold, 1.0f, 0.01f, 0.005f);
+            game.postProc.glowIntensity = gui.property("Glow intensity:", 0.0f, game.postProc.glowIntensity, 1.0f, 0.01f, 0.005f);
 
             gui.layoutRowDynamic(25, 1);
-            game.postProcessingRenderer.glowRadius = gui.property("Glow radius:", 1, game.postProcessingRenderer.glowRadius, 10, 1, 1);
+            game.postProc.glowRadius = gui.property("Glow radius:", 1, game.postProc.glowRadius, 10, 1, 1);
 
             gui.layoutRowDynamic(30, 2);
             gui.label("Tonemapper:", NK_TEXT_LEFT);
-            game.postProcessingRenderer.tonemapper =
+            game.postProc.tonemapper =
                 cast(Tonemapper)gui.comboString(
                     "None\0Reinhard\0Hable\0ACES",
-                    game.postProcessingRenderer.tonemapper, 4, 25, NKVec2(120, 200));
+                    game.postProc.tonemapper, 4, 25, NKVec2(120, 200));
 
             gui.layoutRowDynamic(25, 1);
-            game.postProcessingRenderer.exposure = gui.property("Exposure:", 0.0f, game.postProcessingRenderer.exposure, 2.0f, 0.01f, 0.005f);
+            game.postProc.exposure = gui.property("Exposure:", 0.0f, game.postProc.exposure, 2.0f, 0.01f, 0.005f);
 
             gui.treePop();
         }
