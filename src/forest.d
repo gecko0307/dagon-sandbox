@@ -240,6 +240,7 @@ class ForestScene: Scene
         sun.scatteringEnabled = true;
         sun.scattering = 0.35f;
         sun.mediumDensity = 0.15f;
+        sun.scatteringUseShadow = true;
         sun.color = sunColor;
 
         lightSphere = New!ShapeSphere(1.0f, 24, 16, false, assetManager);
