@@ -462,11 +462,15 @@ class ForestScene: Scene
             decal.material = leavesDecalMaterial;
         }
         
-        gui = New!NuklearGUI(eventManager, assetManager);
-        gui.addFont(aFont, 18, gui.localeGlyphRanges);
-        eNuklear = addEntityHUD();
-        eNuklear.drawable = gui;
-        eNuklear.visible = false;
+        if (nuklearSupport != NuklearSupport.noLibrary && 
+            nuklearSupport != NuklearSupport.badLibrary)
+        {
+            gui = New!NuklearGUI(eventManager, assetManager);
+            gui.addFont(aFont, 18, gui.localeGlyphRanges);
+            eNuklear = addEntityHUD();
+            eNuklear.drawable = gui;
+            eNuklear.visible = false;
+        }
 
         text = addEntityHUD();
         infoText = New!TextLine(aFont.font, "Hello, World!", assetManager);
@@ -507,7 +511,7 @@ class ForestScene: Scene
         string s = cast(string)textBuffer[0..n];
         infoText.setText(s);
 
-        if (eNuklear.visible)
+        if (gui && eNuklear.visible)
             updateUserInterface(t);
         
         if (fpview.active && eventManager.mouseButtonPressed[MB_LEFT])
@@ -562,13 +566,16 @@ class ForestScene: Scene
             }
             else if (key == KEY_RETURN)
             {
-                if (eNuklear.visible)
-                    eNuklear.visible = false;
-                else
-                    eNuklear.visible = true;
+                if (gui)
+                {
+                    if (eNuklear.visible)
+                        eNuklear.visible = false;
+                    else
+                        eNuklear.visible = true;
+                }
             }
             
-            if (eNuklear.visible)
+            if (gui && eNuklear.visible)
             {
                 guiOnKeyDown(key);
             }
@@ -591,35 +598,44 @@ class ForestScene: Scene
 
     override void onKeyUp(int key)
     {
-        if (key == KEY_BACKSPACE)
-            gui.inputKeyUp(NK_KEY_BACKSPACE);
+        if (gui && eNuklear.visible)
+        {
+            if (key == KEY_BACKSPACE)
+                gui.inputKeyUp(NK_KEY_BACKSPACE);
+        }
     }
 
     override void onMouseButtonDown(int button)
     {
-        if (eNuklear.visible)
+        if (gui && eNuklear.visible)
+        {
             gui.inputButtonDown(button);
-        fpview.active = !gui.itemIsAnyActive();
+            fpview.active = !gui.itemIsAnyActive();
+        }
+        else
+        {
+            fpview.active = true;
+        }
         fpview.prevMouseX = eventManager.mouseX;
         fpview.prevMouseY = eventManager.mouseY;
     }
 
     override void onMouseButtonUp(int button)
     {
-        if (eNuklear.visible)
+        if (gui && eNuklear.visible)
             gui.inputButtonUp(button);
         fpview.active = false;
     }
 
     override void onTextInput(dchar unicode)
     {
-        if (eNuklear.visible)
+        if (gui && eNuklear.visible)
             gui.inputUnicode(unicode);
     }
 
     override void onMouseWheel(int x, int y)
     {
-        if (eNuklear.visible && !fpview.active)
+        if (gui && eNuklear.visible && !fpview.active)
             gui.inputScroll(x, y);
     }
 
