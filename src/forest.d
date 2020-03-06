@@ -471,7 +471,7 @@ class ForestScene: Scene
             gui.addFont(aFont, 18, gui.localeGlyphRanges);
             eNuklear = addEntityHUD();
             eNuklear.drawable = gui;
-            eNuklear.visible = false;
+            eNuklear.visible = true;
         }
 
         if (aFont)
