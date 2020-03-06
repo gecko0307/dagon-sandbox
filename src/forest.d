@@ -109,7 +109,7 @@ class ForestScene: Scene
     bool envColorPicker = false;
     Color4f envColor = Color4f(0.8f, 0.8f, 1.0f, 1.0f);
     bool sunColorPicker = false;
-    Color4f sunColor = Color4f(1.0f, 0.66f, 0.33f, 1.0f); //Color4f(1.0f, 0.7f, 0.5f, 1.0f);
+    Color4f sunColor = Color4f(1.0f, 0.66f, 0.33f, 1.0f);
     
     bool fogColorPicker = false;
 
@@ -134,7 +134,9 @@ class ForestScene: Scene
 
     override void beforeLoad()
     {
-        aFont = this.addFontAsset("data/font/DroidSans.ttf", 14);
+        if (freetypeSupport != FTSupport.noLibrary && 
+            freetypeSupport != FTSupport.badLibrary)
+            aFont = this.addFontAsset("data/font/DroidSans.ttf", 14);
 
         aMeshGun = addOBJAsset("data/cerberus/cerberus.obj");
         aTexGunAlbedo = addTextureAsset("data/cerberus/cerberus-albedo.png");
@@ -472,12 +474,15 @@ class ForestScene: Scene
             eNuklear.visible = false;
         }
 
-        text = addEntityHUD();
-        infoText = New!TextLine(aFont.font, "Hello, World!", assetManager);
-        infoText.color = Color4f(1, 1, 1, 0.7f);
-        text.drawable = infoText;
-        text.position.x = 10;
-        text.position.y = eventManager.windowHeight - 10;
+        if (aFont)
+        {
+            text = addEntityHUD();
+            infoText = New!TextLine(aFont.font, "Hello, World!", assetManager);
+            infoText.color = Color4f(1, 1, 1, 0.7f);
+            text.drawable = infoText;
+            text.position.x = 10;
+            text.position.y = eventManager.windowHeight - 10;
+        }
     }
 
     Light addLightBall(Vector3f pos, Color4f color, float energy, float areaRadius, float volumeRadius)
@@ -505,11 +510,14 @@ class ForestScene: Scene
 
     override void onUpdate(Time t)
     {
-        text.position.y = eventManager.windowHeight - 10;
+        if (text && infoText)
+        {
+            text.position.y = eventManager.windowHeight - 10;
 
-        uint n = sprintf(textBuffer.ptr, "FPS: %u", application.cadencer.fps);
-        string s = cast(string)textBuffer[0..n];
-        infoText.setText(s);
+            uint n = sprintf(textBuffer.ptr, "FPS: %u", application.cadencer.fps);
+            string s = cast(string)textBuffer[0..n];
+            infoText.setText(s);
+        }
 
         if (gui && eNuklear.visible)
             updateUserInterface(t);
@@ -524,7 +532,6 @@ class ForestScene: Scene
 
         environment.backgroundColor = envColor;
         environment.ambientColor = envColor * 0.25f;
-        //environment.fogColor = envColor;
 
         sun.rotation =
             rotationQuaternion!float(Axis.y, degtorad(sunTurn)) *
