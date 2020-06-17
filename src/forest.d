@@ -397,6 +397,7 @@ class ForestScene: Scene
         auto shBox = New!ShapeBox(Vector3f(1, 1, 1), assetManager);
         auto mBox = addMaterial();
         mBox.diffuse = aTexBoxDiffuse.texture;
+        mBox.normal = aTexBoxNormal.texture;
         
         foreach(i; 0..10)
         {
