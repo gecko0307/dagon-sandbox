@@ -33,8 +33,71 @@ import std.math;
 import dagon;
 import dagon.ext.nuklear;
 import dagon.ext.ftfont;
+import dagon.ext.physics;
 
 //version = Winter;
+
+void collectEntityTris(Entity e, ref DynamicArray!Triangle tris)
+{
+    if (e.solid && e.drawable)
+    {
+        e.updateTransformationDeep();
+        Matrix4x4f normalMatrix = e.invAbsoluteTransformation.transposed;
+
+        Mesh mesh = cast(Mesh)e.drawable;
+        if (mesh is null)
+        {
+            Terrain t = cast(Terrain)e.drawable;
+            if (t)
+            {
+                mesh = t.collisionMesh;
+            }
+        }
+
+        if (mesh)
+        {
+            foreach(tri; mesh)
+            {
+                Vector3f v1 = tri.v[0];
+                Vector3f v2 = tri.v[1];
+                Vector3f v3 = tri.v[2];
+                Vector3f n = tri.normal;
+
+                v1 = v1 * e.absoluteTransformation;
+                v2 = v2 * e.absoluteTransformation;
+                v3 = v3 * e.absoluteTransformation;
+                
+                Vector3f nWorld = n * normalMatrix;
+
+                Triangle tri2 = tri;
+                tri2.v[0] = v1;
+                tri2.v[1] = v2;
+                tri2.v[2] = v3;
+                tri2.normal = nWorld;
+                tri2.barycenter = (tri2.v[0] + tri2.v[1] + tri2.v[2]) / 3;
+                
+                tris.append(tri2);
+            }
+        }
+    }
+}
+
+BVHTree!Triangle entitiesToBVH(EntityGroup entityGroup)
+{
+    DynamicArray!Triangle tris;
+
+    foreach(e; entityGroup)
+        collectEntityTris(e, tris);
+
+    if (tris.length)
+    {
+        BVHTree!Triangle bvh = New!(BVHTree!Triangle)(tris, 4);
+        tris.free();
+        return bvh;
+    }
+    else
+        return null;
+}
 
 class ForestScene: Scene
 {
@@ -62,6 +125,9 @@ class ForestScene: Scene
     TextureAsset aTexGrassNormal;
     TextureAsset aTexPavementAlbedo;
     TextureAsset aTexPavementNormal;
+    
+    TextureAsset aTexBoxDiffuse;
+    TextureAsset aTexBoxNormal;
 
     TextureAsset aTexFireDiffuse;
     TextureAsset aTexSmokeDiffuse;
@@ -85,9 +151,13 @@ class ForestScene: Scene
     
     OBJAsset aSpruce;
     TextureAsset aSpruceAlbedo;
+    
+    PhysicsWorld physicsWorld;
+    BVHTree!Triangle bvh;
 
     Camera camera;
     FirstPersonViewComponent fpview;
+    CharacterController character;
 
     Light sun;
     Entity eSky;
@@ -98,38 +168,25 @@ class ForestScene: Scene
     ShapeSphere lightSphere;
 
     Entity eTerrain;
-    Entity eGun;
 
     FreeTypeFont font;
     Entity text;
     TextLine infoText;
 
-    NuklearGUI gui;
-    Entity eNuklear;
-    bool envColorPicker = false;
-    Color4f envColor = Color4f(0.8f, 0.8f, 1.0f, 1.0f);
-    bool sunColorPicker = false;
-    Color4f sunColor = Color4f(1.0f, 0.66f, 0.33f, 1.0f);
-    
-    bool fogColorPicker = false;
-
     float sunPitch = -20.0f;
     float sunTurn = 135.0f;
-
-    int useTextures = 1;
-
-    Color4f diffuseColor;
-    bool diffuseColorPicker = false;
-
-    float roughness = 0.5f;
-    float metallic = 0.0f;
-    float energy = 0.0f;
 
     this(Game game)
     {
         super(game);
         this.game = game;
         loadingScreen = New!LoadingScreen(game, this);
+    }
+    
+    ~this()
+    {
+        if (bvh)
+            bvh.free();
     }
 
     override void beforeLoad()
@@ -172,6 +229,9 @@ class ForestScene: Scene
         aTexDesertNormal = addTextureAsset("data/terrain/desert-normal.png");
 
         aTexPavementNormal = addTextureAsset("data/terrain/pavement-normal.png");
+        
+        aTexBoxDiffuse = addTextureAsset("data/box/box-diffuse.png");
+        aTexBoxNormal = addTextureAsset("data/box/box-normal.png");
 
         aTexFireDiffuse = addTextureAsset("data/particles/fire.png");
         aTexSmokeDiffuse = addTextureAsset("data/particles/smoke-diffuse.png");
@@ -203,6 +263,8 @@ class ForestScene: Scene
 
     override void afterLoad()
     {
+        physicsWorld = New!PhysicsWorld(assetManager);
+        
         envCubemap = addCubemap(1024);
         //envCubemap.fromEquirectangularMap(aEnvmap.texture);
         envCubemap.setFaceImage(CubeFace.PositiveZ, aTexSkyFront.image);
@@ -212,25 +274,28 @@ class ForestScene: Scene
         envCubemap.setFaceImage(CubeFace.PositiveY, aTexSkyTop.image);
         envCubemap.setFaceImage(CubeFace.NegativeY, aTexSkyBottom.image);
         environment.ambientMap = envCubemap;
+        
+        environment.backgroundColor = Color4f(0.8f, 0.8f, 1.0f, 1.0f);
+        environment.ambientColor = environment.backgroundColor * 0.25f;
 
         camera = addCamera();
         fpview = New!FirstPersonViewComponent(eventManager, camera);
-        fpview.active = false;
+        //fpview.active = true;
         camera.position.y = 10.0f;
         game.renderer.activeCamera = camera;
 
         game.deferred.ssaoEnabled = true;
-        game.deferred.ssaoPower = 6.0;
-        game.postProc.motionBlurEnabled = true;
+        game.deferred.ssaoPower = 3.0;
+        game.postProc.motionBlurEnabled = false;
+        game.postProc.motionBlurFramerate = 60;
         game.postProc.glowEnabled = true;
-        game.postProc.glowThreshold = 0.3f;
+        game.postProc.glowThreshold = 1.0f;
         game.postProc.glowIntensity = 0.3f;
-        game.postProc.glowRadius = 10;
+        game.postProc.glowRadius = 7;
         game.postProc.fxaaEnabled = true;
         game.postProc.lutEnabled = true;
-        game.postProc.lensDistortionEnabled = true;
-        game.postProc.motionBlurFramerate = 45;
         game.postProc.colorLookupTable = aTexColorTable.texture;
+        game.postProc.lensDistortionEnabled = true;
 
         sun = addLight(LightType.Sun);
         sun.position.y = 50.0f;
@@ -243,7 +308,7 @@ class ForestScene: Scene
         sun.scattering = 0.35f;
         sun.mediumDensity = 0.15f;
         sun.scatteringUseShadow = true;
-        sun.color = sunColor;
+        sun.color = Color4f(1.0f, 0.66f, 0.33f, 1.0f);
 
         lightSphere = New!ShapeSphere(1.0f, 24, 16, false, assetManager);
 
@@ -278,6 +343,7 @@ class ForestScene: Scene
 
         eTerrain = addEntity();
         eTerrain.dynamic = false;
+        eTerrain.solid = true;
         eTerrain.position = Vector3f(-64, 0, -64);
         eTerrain.material = addMaterial();
 
@@ -305,25 +371,44 @@ class ForestScene: Scene
         eTerrain.drawable = terrain;
         eTerrain.scaling = Vector3f(0.25f, 0.25f, 0.25f);
 
+        aScene.entity.position.y = aScene.entity.position.y + 5.8f;
         useEntity(aScene.entity);
-        aScene.entity.position.y = 5.8f;
-        foreach(name, asset; aScene.entities)
+        foreach(name, entityAsset; aScene.entities)
         {
-            useEntity(asset.entity);
-            //asset.entity.dynamic = false;
+            auto entity = entityAsset.entity;
+            entity.layer = EntityLayer.Spatial;
+            entity.solid = true;
+            useEntity(entity);
         }
         
-        eGun = addEntity();
-        eGun.position.y = 14.0f;
-        eGun.drawable = aMeshGun.mesh;
-        eGun.material = addMaterial();
-        eGun.material.diffuse = aTexGunAlbedo.texture;
-        eGun.material.normal = aTexGunNormal.texture;
-        eGun.material.roughness = aTexGunRoughness.texture;
-        eGun.material.metallic = aTexGunMetallic.texture;
-        eGun.material.energy = 0.0f;
-        eGun.visible = false;
-        diffuseColor = Color4f(0.5f, 0.5f, 0.5f, 1.0f);
+        bvh = entitiesToBVH(spatial);
+        if (bvh)
+            physicsWorld.bvhRoot = bvh.root;
+        
+        auto eCharacter = addEntity();
+        eCharacter.position = camera.position;
+        auto characterSphere = New!GeomEllipsoid(physicsWorld, Vector3f(0.9f, 1.0f, 0.9f));
+        character = New!CharacterController(eventManager, eCharacter, physicsWorld, 80.0f, characterSphere);
+        character.rbody.layer = 1;
+        auto characterSensorGeom = New!GeomBox(physicsWorld, Vector3f(0.5f, 0.5f, 0.5f));
+        character.createSensor(characterSensorGeom, Vector3f(0.0f, -0.75f, 0.0f));
+        
+        auto rbBoxGeom = New!GeomBox(physicsWorld, Vector3f(0.5f, 0.5f, 0.5f));
+        auto shBox = New!ShapeBox(Vector3f(1, 1, 1), assetManager);
+        auto mBox = addMaterial();
+        mBox.diffuse = aTexBoxDiffuse.texture;
+        
+        foreach(i; 0..10)
+        {
+            auto eBox = addEntity();
+            eBox.drawable = shBox;
+            eBox.material = mBox;
+            eBox.position = Vector3f(i * 0.05f, 10.0f + 3.0f * cast(float)i, 5.0f);
+            eBox.scaling = Vector3f(0.5f, 0.5f, 0.5f);
+            auto rbBox = physicsWorld.addDynamicBody(Vector3f(0, 0, 0), 0.0f);
+            RigidBodyComponent rbBoxComp = New!RigidBodyComponent(eventManager, eBox, rbBox);
+            physicsWorld.addShapeComponent(rbBox, rbBoxGeom, Vector3f(0.0f, 0.0f, 0.0f), 20.0f);
+        }
 
         auto mParticlesSmoke = addMaterial();
         mParticlesSmoke.diffuse = aTexSmokeDiffuse.texture;
@@ -389,32 +474,34 @@ class ForestScene: Scene
         auto eVortex = addEntity();
         eVortex.position = Vector3f(2, 4, 0);
         auto vortex = New!Vortex(eVortex, particleSystem, 1.0f, 1.0f);
-
+        
+        Vector3f center = Vector3f(0.0f, 0.0f, 0.0f);
+        
         auto mBushHi = addMaterial();
         mBushHi.diffuse = aBush.texture;
         mBushHi.culling = false;
         mBushHi.roughness = 1;
         mBushHi.specularity = 0;
         mBushHi.sun = sun;
+        /*
         auto mBushLow = addMaterial();
         mBushLow.diffuse = aBush.texture;
         mBushLow.culling = false;
         mBushLow.roughness = 1;
         mBushLow.specularity = 0;
         mBushLow.sphericalNormal = true;
-
-        auto lod = New!LODDrawable(assetManager);
-        lod.addLevel(aBushHi.mesh, mBushHi, 0.0f, 50.0f, 0.0f);
-        lod.addLevel(aBushLow.mesh, mBushLow, 50.0f, 500.0f, 0.0f);
-        Vector3f center = Vector3f(0.0f, 0.0f, 0.0f);
+        */
+        
+        //auto lod = New!LODDrawable(assetManager);
+        //lod.addLevel(aBushHi.mesh, mBushHi, 0.0f, 50.0f, 0.0f);
+        //lod.addLevel(aBushLow.mesh, mBushLow, 50.0f, 500.0f, 0.0f);
 
         foreach(i; 0..50)
         {
             auto eBush = addEntity();
             eBush.dynamic = false;
-            eBush.drawable = lod;
+            eBush.drawable = aBushHi.mesh;
             eBush.material = mBushHi;
-            //eBush.opacity = 0.5;
             float rnd = uniform(0.4f, 1.0f);
             Vector2f pos = randomUnitVector2!float() * 50.0f;
             eBush.position = lerp(center, Vector3f(pos.x, 0.0f, pos.y), rnd);
@@ -463,16 +550,6 @@ class ForestScene: Scene
             decal.position.y = terrain.getHeight(eTerrain, decal.position);
             decal.material = leavesDecalMaterial;
         }
-        
-        if (nuklearSupport != NuklearSupport.noLibrary && 
-            nuklearSupport != NuklearSupport.badLibrary)
-        {
-            gui = New!NuklearGUI(eventManager, assetManager);
-            gui.addFont(aFont, 18, gui.localeGlyphRanges);
-            eNuklear = addEntityHUD();
-            eNuklear.drawable = gui;
-            eNuklear.visible = true;
-        }
 
         if (aFont)
         {
@@ -483,6 +560,8 @@ class ForestScene: Scene
             text.position.x = 10;
             text.position.y = eventManager.windowHeight - 10;
         }
+        
+        eventManager.showCursor(false);
     }
 
     Light addLightBall(Vector3f pos, Color4f color, float energy, float areaRadius, float volumeRadius)
@@ -505,6 +584,26 @@ class ForestScene: Scene
 
         return light;
     }
+    
+    void updateCharacter()
+    {
+        Vector3f forward = camera.transformation.forward;
+        Vector3f right = camera.transformation.right;
+        float speed = 3.0f;
+        Vector3f dir = Vector3f(0, 0, 0);
+        if (inputManager.getButton("forward")) dir += -forward;
+        if (inputManager.getButton("back"))    dir += forward;
+        if (inputManager.getButton("left"))    dir += -right;
+        if (inputManager.getButton("right"))   dir += right;
+        character.move(dir.normalized, speed);
+        
+        if (inputManager.getButtonDown("jump")) 
+        {
+            character.jump(0.5f);
+        }
+        
+        character.logicalUpdate();
+    }
 
     char[100] textBuffer;
 
@@ -514,136 +613,41 @@ class ForestScene: Scene
         {
             text.position.y = eventManager.windowHeight - 10;
 
-            uint n = sprintf(textBuffer.ptr, "FPS: %u", application.cadencer.fps);
+            uint n = sprintf(textBuffer.ptr, "FPS: %u Vis. static: %u Vis. dynamic: %u", 
+                game.cadencer.fps, 
+                game.deferred.passStaticGeometry.renderedEntities,
+                game.deferred.passDynamicGeometry.renderedEntities);
             string s = cast(string)textBuffer[0..n];
             infoText.setText(s);
         }
-
-        if (gui && eNuklear.visible)
-            updateUserInterface(t);
         
-        if (fpview.active && eventManager.mouseButtonPressed[MB_LEFT])
+        if (fpview.active)
         {
-            if (eventManager.keyPressed[KEY_W]) camera.move(-0.25f);
-            if (eventManager.keyPressed[KEY_S]) camera.move(0.25f);
-            if (eventManager.keyPressed[KEY_A]) camera.strafe(-0.25f);
-            if (eventManager.keyPressed[KEY_D]) camera.strafe(0.25f);
+            updateCharacter();
         }
-
-        environment.backgroundColor = envColor;
-        environment.ambientColor = envColor * 0.25f;
 
         sun.rotation =
             rotationQuaternion!float(Axis.y, degtorad(sunTurn)) *
             rotationQuaternion!float(Axis.x, degtorad(sunPitch));
-        sun.color = sunColor;
 
         rayleighShader.sunDirection = -sun.rotation.rotate(Vector3f(0.0f, 0.0f, 1.0f));
         if (useSky)
             eSky.material.shader = rayleighShader;
         else
             eSky.material.shader = null;
-
-        if (!useTextures)
-        {
-            eGun.material.diffuse = diffuseColor;
-            eGun.material.roughness = roughness;
-            eGun.material.metallic = metallic;
-        }
-        else
-        {
-            eGun.material.diffuse = aTexGunAlbedo.texture;
-            eGun.material.roughness = aTexGunRoughness.texture;
-            eGun.material.metallic = aTexGunMetallic.texture;
-        }
-
-        eGun.material.emission = diffuseColor;
-        eGun.material.energy = energy;
+        
+        physicsWorld.update(t.delta);
+        camera.position = character.rbody.position;
     }
 
     override void onKeyDown(int key)
     {
         if (key == KEY_ESCAPE)
             application.exit();
-        else
-        {
-            if (key == KEY_R)
-            {
-                eGun.rotateFromTo(Vector3f(0, 0, 0), Vector3f(180, 90, 0), 1.0f, Easing.QuadInOut);
-            }
-            else if (key == KEY_RETURN)
-            {
-                if (gui)
-                {
-                    if (eNuklear.visible)
-                        eNuklear.visible = false;
-                    else
-                        eNuklear.visible = true;
-                }
-            }
-            
-            if (gui && eNuklear.visible)
-            {
-                guiOnKeyDown(key);
-            }
-        }
     }
     
-    void guiOnKeyDown(int key)
-    {
-        if (key == KEY_BACKSPACE)
-            gui.inputKeyDown(NK_KEY_BACKSPACE);
-        else if (key == KEY_DELETE)
-            gui.inputKeyDown(NK_KEY_DEL);
-        else if (key == KEY_C && eventManager.keyPressed[KEY_LCTRL])
-            gui.inputKeyDown(NK_KEY_COPY);
-        else if (key == KEY_V && eventManager.keyPressed[KEY_LCTRL])
-            gui.inputKeyDown(NK_KEY_PASTE);
-        else if (key == KEY_A && eventManager.keyPressed[KEY_LCTRL])
-            gui.inputKeyDown(NK_KEY_TEXT_SELECT_ALL);
-    }
-
-    override void onKeyUp(int key)
-    {
-        if (gui && eNuklear.visible)
-        {
-            if (key == KEY_BACKSPACE)
-                gui.inputKeyUp(NK_KEY_BACKSPACE);
-        }
-    }
-
     override void onMouseButtonDown(int button)
     {
-        if (gui && eNuklear.visible)
-        {
-            gui.inputButtonDown(button);
-            fpview.active = !gui.itemIsAnyActive();
-        }
-        else
-        {
-            fpview.active = true;
-        }
-        fpview.prevMouseX = eventManager.mouseX;
-        fpview.prevMouseY = eventManager.mouseY;
-    }
-
-    override void onMouseButtonUp(int button)
-    {
-        if (gui && eNuklear.visible)
-            gui.inputButtonUp(button);
-        fpview.active = false;
-    }
-
-    override void onTextInput(dchar unicode)
-    {
-        if (gui && eNuklear.visible)
-            gui.inputUnicode(unicode);
-    }
-
-    override void onMouseWheel(int x, int y)
-    {
-        if (gui && eNuklear.visible && !fpview.active)
-            gui.inputScroll(x, y);
     }
 
     override void onDropFile(string filename)
@@ -659,248 +663,5 @@ class ForestScene: Scene
 
         environment.ambientMap = envCubemap;
         eSky.material.diffuse = envCubemap;
-    }
-
-    void updateMenu()
-    {
-        if (gui.begin("Menu", NKRect(0, 0, eventManager.windowWidth, 40), 0))
-        {
-            gui.menubarBegin();
-            {
-                gui.layoutRowStatic(30, 40, 5);
-
-                if (gui.menuBeginLabel("File", NK_TEXT_LEFT, NKVec2(200, 200)))
-                {
-                    gui.layoutRowDynamic(25, 1);
-                    if (gui.menuItemLabel("New", NK_TEXT_LEFT)) { }
-                    if (gui.menuItemLabel("Open", NK_TEXT_LEFT)) { }
-                    if (gui.menuItemLabel("Save", NK_TEXT_LEFT)) { }
-                    if (gui.menuItemLabel("Exit", NK_TEXT_LEFT)) { application.exit(); }
-                    gui.menuEnd();
-                }
-
-                if (gui.menuBeginLabel("Edit", NK_TEXT_LEFT, NKVec2(200, 200)))
-                {
-                    gui.layoutRowDynamic(25, 1);
-                    if (gui.menuItemLabel("Copy", NK_TEXT_LEFT)) { }
-                    if (gui.menuItemLabel("Paste", NK_TEXT_LEFT)) { }
-                    gui.menuEnd();
-                }
-
-                if (gui.menuBeginLabel("Help", NK_TEXT_LEFT, NKVec2(200, 200)))
-                {
-                    gui.layoutRowDynamic(25, 1);
-                    if (gui.menuItemLabel("About...", NK_TEXT_LEFT)) { }
-                    gui.menuEnd();
-                }
-            }
-            gui.menubarEnd();
-        }
-        gui.end();
-    }
-
-    void updateRenderTab()
-    {
-        if (gui.treePush(NK_TREE_NODE, "Render", NK_MAXIMIZED))
-        {
-            gui.layoutRowDynamic(30, 2);
-            gui.label("Output:", NK_TEXT_LEFT);
-            auto oldOutputMode = game.deferred.outputMode;
-            game.deferred.outputMode =
-                cast(DebugOutputMode)gui.comboString(
-                    "Radiance\0Albedo\0Normal\0Position\0Roughness\0Metallic\0Occlusion",
-                    game.deferred.outputMode, 7, 25, NKVec2(120, 250));
-            if (game.deferred.outputMode != oldOutputMode)
-                writeln("Output mode: ", game.deferred.outputMode);
-
-            gui.layoutRowDynamic(25, 1);
-            game.deferred.ssaoSamples = gui.property("AO samples:", 1, game.deferred.ssaoSamples, 25, 1, 1);
-            game.deferred.ssaoRadius = gui.property("AO radius:", 0.05f, game.deferred.ssaoRadius, 1.0f, 0.01f, 0.005f);
-            game.deferred.ssaoPower = gui.property("AO power:", 0.0f, game.deferred.ssaoPower, 10.0f, 0.01f, 0.01f);
-            game.deferred.ssaoDenoise = gui.property("AO denoise:", 0.0f, game.deferred.ssaoDenoise, 1.0f, 0.01f, 0.01f);
-
-            gui.layoutRowDynamic(25, 1);
-            game.postProc.glowThreshold = gui.property("Glow threshold:", 0.0f, game.postProc.glowThreshold, 1.0f, 0.01f, 0.005f);
-            game.postProc.glowIntensity = gui.property("Glow intensity:", 0.0f, game.postProc.glowIntensity, 1.0f, 0.01f, 0.005f);
-
-            gui.layoutRowDynamic(25, 1);
-            game.postProc.glowRadius = gui.property("Glow radius:", 1, game.postProc.glowRadius, 10, 1, 1);
-
-            gui.layoutRowDynamic(30, 2);
-            gui.label("Tonemapper:", NK_TEXT_LEFT);
-            game.postProc.tonemapper =
-                cast(Tonemapper)gui.comboString(
-                    "None\0Reinhard\0Hable\0ACES",
-                    game.postProc.tonemapper, 4, 25, NKVec2(120, 200));
-
-            gui.layoutRowDynamic(25, 1);
-            game.postProc.exposure = gui.property("Exposure:", 0.0f, game.postProc.exposure, 2.0f, 0.01f, 0.005f);
-
-            gui.treePop();
-        }
-    }
-
-    void updateEnvironmentTab()
-    {
-        if (gui.treePush(NK_TREE_NODE, "Environment", NK_MINIMIZED))
-        {
-            gui.layoutRowDynamic(25, 2);
-            gui.label("Background color:", NK_TEXT_LEFT);
-            if (gui.buttonColor(envColor))
-                envColorPicker = !envColorPicker;
-            if (envColorPicker)
-            {
-                NKRect s = NKRect(300, 100, 300, 350);
-                if (gui.popupBegin(NK_POPUP_STATIC, "Color", NK_WINDOW_CLOSABLE, s))
-                {
-                    gui.layoutRowDynamic(180, 1);
-                    envColor = gui.colorPicker(envColor, NK_RGB);
-                    gui.layoutRowDynamic(25, 1);
-                    envColor.r = gui.property("#R:", 0.0f, envColor.r, 1.0f, 0.01f, 0.005f);
-                    envColor.g = gui.property("#G:", 0.0f, envColor.g, 1.0f, 0.01f, 0.005f);
-                    envColor.b = gui.property("#B:", 0.0f, envColor.b, 1.0f, 0.01f, 0.005f);
-                    gui.popupEnd();
-                }
-                else envColorPicker = false;
-            }
-
-            gui.layoutRowDynamic(25, 2);
-            gui.label("Sun color:", NK_TEXT_LEFT);
-            if (gui.buttonColor(sunColor))
-                sunColorPicker = !sunColorPicker;
-            if (sunColorPicker)
-            {
-                NKRect s = NKRect(300, 100, 300, 350);
-                if (gui.popupBegin(NK_POPUP_STATIC, "Color", NK_WINDOW_CLOSABLE, s))
-                {
-                    gui.layoutRowDynamic(180, 1);
-                    sunColor = gui.colorPicker(sunColor, NK_RGB);
-                    gui.layoutRowDynamic(25, 1);
-                    sunColor.r = gui.property("#R:", 0.0f, sunColor.r, 1.0f, 0.01f, 0.005f);
-                    sunColor.g = gui.property("#G:", 0.0f, sunColor.g, 1.0f, 0.01f, 0.005f);
-                    sunColor.b = gui.property("#B:", 0.0f, sunColor.b, 1.0f, 0.01f, 0.005f);
-                    gui.popupEnd();
-                }
-                else sunColorPicker = false;
-            }
-
-            gui.layoutRowDynamic(25, 1);
-            gui.label("Rayleigh sky:", NK_TEXT_LEFT);
-            gui.layoutRowDynamic(25, 2);
-            if (gui.optionLabel("on", useSky == true)) useSky = true;
-            if (gui.optionLabel("off", useSky == false)) useSky = false;
-
-            gui.layoutRowDynamic(25, 2);
-            gui.label("Sun pitch:", NK_TEXT_LEFT);
-            gui.slider(-180.0f, &sunPitch, 180.0f, 0.01f);
-
-            gui.layoutRowDynamic(25, 2);
-            gui.label("Sun turn:", NK_TEXT_LEFT);
-            gui.slider(-180.0f, &sunTurn, 180.0f, 0.01f);
-
-            gui.layoutRowDynamic(25, 2);
-            gui.label("Sun energy:", NK_TEXT_LEFT);
-            gui.slider(0.0f, &sun.energy, 50.0f, 0.01f);
-
-            gui.layoutRowDynamic(25, 2);
-            int sc = sun.scatteringEnabled;
-            gui.checkboxLabel("Volumetric light", &sc);
-            sun.scatteringEnabled = cast(bool)sc;
-            gui.layoutRowDynamic(25, 2);
-            gui.label("Scattering:", NK_TEXT_LEFT);
-            gui.slider(0.0f, &sun.scattering, 1.0f, 0.01f);
-            gui.layoutRowDynamic(25, 2);
-            gui.label("Medium density:", NK_TEXT_LEFT);
-            gui.slider(0.0f, &sun.mediumDensity, 1.0f, 0.01f);
-            
-            gui.layoutRowDynamic(25, 2);
-            gui.label("Fog start:", NK_TEXT_LEFT);
-            gui.slider(0.0f, &environment.fogStart, 100.0f, 1.0f);
-            gui.layoutRowDynamic(25, 2);
-            gui.label("Fog end:", NK_TEXT_LEFT);
-            gui.slider(0.0f, &environment.fogEnd, 1000.0f, 1.0f);
-            
-            gui.layoutRowDynamic(25, 2);
-            gui.label("Fog color:", NK_TEXT_LEFT);
-            Color4f fogColor = environment.fogColor;
-            if (gui.buttonColor(fogColor))
-                fogColorPicker = !fogColorPicker;
-            if (fogColorPicker)
-            {
-                NKRect s = NKRect(300, 100, 300, 350);
-                if (gui.popupBegin(NK_POPUP_STATIC, "Color", NK_WINDOW_CLOSABLE, s))
-                {
-                    gui.layoutRowDynamic(180, 1);
-                    fogColor = gui.colorPicker(fogColor, NK_RGB);
-                    gui.layoutRowDynamic(25, 1);
-                    fogColor.r = gui.property("#R:", 0.0f, fogColor.r, 1.0f, 0.01f, 0.005f);
-                    fogColor.g = gui.property("#G:", 0.0f, fogColor.g, 1.0f, 0.01f, 0.005f);
-                    fogColor.b = gui.property("#B:", 0.0f, fogColor.b, 1.0f, 0.01f, 0.005f);
-                    gui.popupEnd();
-                }
-                else fogColorPicker = false;
-            }
-            environment.fogColor = fogColor;
-
-            gui.treePop();
-        }
-    }
-
-    void updateMaterialTab()
-    {
-        if (gui.treePush(NK_TREE_NODE, "Material", NK_MAXIMIZED))
-        {
-            gui.layoutRowDynamic(25, 2);
-            gui.checkboxLabel("Textures", &useTextures);
-
-            gui.layoutRowDynamic(25, 2);
-            gui.label("Diffuse color:", NK_TEXT_LEFT);
-            if (gui.buttonColor(diffuseColor))
-                diffuseColorPicker = !diffuseColorPicker;
-
-            if (diffuseColorPicker)
-            {
-                NKRect s = NKRect(300, 100, 300, 350);
-                if (gui.popupBegin(NK_POPUP_STATIC, "Color", NK_WINDOW_CLOSABLE, s))
-                {
-                    gui.layoutRowDynamic(180, 1);
-                    diffuseColor = gui.colorPicker(diffuseColor, NK_RGB);
-                    gui.layoutRowDynamic(25, 1);
-                    diffuseColor.r = gui.property("#R:", 0.0f, diffuseColor.r, 1.0f, 0.01f, 0.005f);
-                    diffuseColor.g = gui.property("#G:", 0.0f, diffuseColor.g, 1.0f, 0.01f, 0.005f);
-                    diffuseColor.b = gui.property("#B:", 0.0f, diffuseColor.b, 1.0f, 0.01f, 0.005f);
-                    gui.popupEnd();
-                }
-                else diffuseColorPicker = false;
-            }
-
-            gui.layoutRowDynamic(25, 1);
-            roughness = gui.property("Roughness:", 0.0f, roughness, 1.0f, 0.01f, 0.005f);
-
-            gui.layoutRowDynamic(25, 1);
-            metallic = gui.property("Metallic:", 0.0f, metallic, 1.0f, 0.01f, 0.005f);
-
-            gui.layoutRowDynamic(25, 1);
-            energy = gui.property("Energy:", 0.0f, energy, 10.0f, 0.01f, 0.005f);
-            gui.treePop();
-        }
-    }
-
-    void updatePropertiesPanel()
-    {
-        if (gui.begin("Properties", NKRect(0, 40, 300, eventManager.windowHeight - 40), NK_WINDOW_TITLE))
-        {
-            updateRenderTab();
-            updateEnvironmentTab();
-            updateMaterialTab();
-        }
-        gui.end();
-    }
-
-    void updateUserInterface(Time t)
-    {
-        gui.update(t);
-        updateMenu();
-        updatePropertiesPanel();
     }
 }

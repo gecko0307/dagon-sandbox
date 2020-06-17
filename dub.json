@@ -9,6 +9,7 @@
 
     "dependencies": {
         "dagon": "~master",
+        "dagon:physics": "~master",
         "dagon:nuklear": "~master",
         "dagon:ftfont": "~master"
     },
