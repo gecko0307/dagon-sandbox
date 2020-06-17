@@ -286,7 +286,7 @@ class ForestScene: Scene
 
         game.deferred.ssaoEnabled = true;
         game.deferred.ssaoPower = 3.0;
-        game.postProc.motionBlurEnabled = false;
+        game.postProc.motionBlurEnabled = true;
         game.postProc.motionBlurFramerate = 60;
         game.postProc.glowEnabled = true;
         game.postProc.glowThreshold = 1.0f;
