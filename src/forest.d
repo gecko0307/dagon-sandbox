@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019 Timur Gafarov
+Copyright (c) 2019-2020 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 Permission is hereby granted, free of charge, to any person or organization
@@ -172,6 +172,9 @@ class ForestScene: Scene
     FreeTypeFont font;
     Entity text;
     TextLine infoText;
+    
+    NuklearGUI gui;
+    Entity eNuklear;
 
     float sunPitch = -20.0f;
     float sunTurn = 135.0f;
@@ -551,6 +554,16 @@ class ForestScene: Scene
             decal.position.y = terrain.getHeight(eTerrain, decal.position);
             decal.material = leavesDecalMaterial;
         }
+        
+        if (nuklearSupport != NuklearSupport.noLibrary && 
+            nuklearSupport != NuklearSupport.badLibrary)
+        {
+            gui = New!NuklearGUI(eventManager, assetManager);
+            gui.addFont(aFont, 18, gui.localeGlyphRanges);
+            eNuklear = addEntityHUD();
+            eNuklear.drawable = gui;
+            eNuklear.visible = true;
+        }
 
         if (aFont)
         {
@@ -622,6 +635,9 @@ class ForestScene: Scene
             infoText.setText(s);
         }
         
+        if (gui && eNuklear.visible)
+            updateGUI(t);
+        
         if (fpview.active)
         {
             updateCharacter();
@@ -645,10 +661,65 @@ class ForestScene: Scene
     {
         if (key == KEY_ESCAPE)
             application.exit();
+        else if (key == KEY_RETURN)
+            eNuklear.visible = !eNuklear.visible;
+        else if (key == KEY_BACKSPACE)
+            gui.inputKeyDown(NK_KEY_BACKSPACE);
+        else if (key == KEY_DELETE)
+            gui.inputKeyDown(NK_KEY_DEL);
+        else if (key == KEY_C && eventManager.keyPressed[KEY_LCTRL])
+            gui.inputKeyDown(NK_KEY_COPY);
+        else if (key == KEY_V && eventManager.keyPressed[KEY_LCTRL])
+            gui.inputKeyDown(NK_KEY_PASTE);
+        else if (key == KEY_A && eventManager.keyPressed[KEY_LCTRL])
+            gui.inputKeyDown(NK_KEY_TEXT_SELECT_ALL);
+    }
+    
+    override void onKeyUp(int key)
+    {
+        if (gui && eNuklear.visible)
+        {
+            if (key == KEY_BACKSPACE)
+                gui.inputKeyUp(NK_KEY_BACKSPACE);
+        }
     }
     
     override void onMouseButtonDown(int button)
     {
+        if (gui && eNuklear.visible)
+        {
+            gui.inputButtonDown(button);
+        }
+    }
+    
+    override void onMouseButtonUp(int button)
+    {
+        bool unfocused = true;
+        if (gui && eNuklear.visible)
+        {
+            gui.inputButtonUp(button);
+            unfocused = !gui.itemIsAnyActive();
+        }
+        
+        if (unfocused)
+        {
+            fpview.active = !fpview.active;
+            eventManager.showCursor(!fpview.active);
+            fpview.prevMouseX = eventManager.mouseX;
+            fpview.prevMouseY = eventManager.mouseY;
+        }
+    }
+
+    override void onTextInput(dchar unicode)
+    {
+        if (gui && eNuklear.visible)
+            gui.inputUnicode(unicode);
+    }
+
+    override void onMouseWheel(int x, int y)
+    {
+        if (gui && eNuklear.visible && !fpview.active)
+            gui.inputScroll(x, y);
     }
 
     override void onDropFile(string filename)
@@ -664,5 +735,45 @@ class ForestScene: Scene
 
         environment.ambientMap = envCubemap;
         eSky.material.diffuse = envCubemap;
+    }
+    
+    void updateGUI(Time t)
+    {
+        gui.update(t);
+        
+        if (gui.begin("Menu", NKRect(0, 0, eventManager.windowWidth, 40), 0))
+        {
+            gui.menubarBegin();
+            {
+                gui.layoutRowStatic(30, 40, 5);
+
+                if (gui.menuBeginLabel("File", NK_TEXT_LEFT, NKVec2(200, 200)))
+                {
+                    gui.layoutRowDynamic(25, 1);
+                    if (gui.menuItemLabel("New", NK_TEXT_LEFT)) { }
+                    if (gui.menuItemLabel("Open", NK_TEXT_LEFT)) { }
+                    if (gui.menuItemLabel("Save", NK_TEXT_LEFT)) { }
+                    if (gui.menuItemLabel("Exit", NK_TEXT_LEFT)) { application.exit(); }
+                    gui.menuEnd();
+                }
+
+                if (gui.menuBeginLabel("Edit", NK_TEXT_LEFT, NKVec2(200, 200)))
+                {
+                    gui.layoutRowDynamic(25, 1);
+                    if (gui.menuItemLabel("Copy", NK_TEXT_LEFT)) { }
+                    if (gui.menuItemLabel("Paste", NK_TEXT_LEFT)) { }
+                    gui.menuEnd();
+                }
+
+                if (gui.menuBeginLabel("Help", NK_TEXT_LEFT, NKVec2(200, 200)))
+                {
+                    gui.layoutRowDynamic(25, 1);
+                    if (gui.menuItemLabel("About...", NK_TEXT_LEFT)) { }
+                    gui.menuEnd();
+                }
+            }
+            gui.menubarEnd();
+        }
+        gui.end();
     }
 }
