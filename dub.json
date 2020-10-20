@@ -8,10 +8,10 @@
     ],
 
     "dependencies": {
-        "dagon": "~master",
-        "dagon:physics": "~master",
-        "dagon:nuklear": "~master",
-        "dagon:ftfont": "~master"
+        "dagon": "0.11.0",
+        "dagon:physics": "0.11.0",
+        "dagon:nuklear": "0.11.0",
+        "dagon:ftfont": "0.11.0"
     },
 
     "buildRequirements":[
@@ -28,14 +28,6 @@
         {
             "name": "application",
             "targetType": "executable"
-        },
-        {
-            "name": "mimalloc",
-            "targetType": "executable",
-            "dependencies": {
-                "bindbc-loader": "~>0.2.1"
-            },
-            "versions": ["Mimalloc"]
         }
     ]
 }

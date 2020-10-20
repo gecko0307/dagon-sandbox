@@ -15,16 +15,6 @@ class MyGame: Game
 
 void main(string[] args)
 {
-    version(Mimalloc)
-    {
-        import bindbc.mimalloc;
-        import mimallocator;
-
-        writeln("Using mimalloc");
-        loadMimalloc();
-        globalAllocator = Mimallocator.instance();
-    }
-
     MyGame game = New!MyGame(1280, 720, false, "Dagon Sanbox", args);
     game.run();
     Delete(game);
